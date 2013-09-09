@@ -1,0 +1,60 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#000000"
+    tools:context=".Act_Check" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="80dp"
+        android:layout_marginTop="5dp"
+        android:textColor="#ffffff"
+        android:text="@string/title_activity_act_check"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/txt_check_show"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginTop="50dp"
+        android:textColor="#ffffff"/>
+
+
+    <EditText
+        android:id="@+id/txt_check_reactivate"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginTop="120dp"
+        android:textColor="#ffffff"
+        android:inputType="phone"
+        android:hint="@string/txt_enter_product_key" />
+
+    <Button
+        android:id="@+id/btn_check_reactivate"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="180dp"
+        android:layout_marginLeft="20dp"
+        android:textColor="#ffffff"
+        android:text="@string/txt_enter_reactivate" />
+	<Button
+        android:id="@+id/btn_check_exit"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="180dp"
+        android:layout_marginLeft="150dp"
+        android:textColor="#ffffff"
+        android:text="@string/txt_exit" />
+</RelativeLayout>
+
+
+
