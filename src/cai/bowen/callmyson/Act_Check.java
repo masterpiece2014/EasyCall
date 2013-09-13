@@ -78,9 +78,7 @@ public class Act_Check extends Activity {
 				public void onClick(View v) {
 					if (isValidKey(editText.getText().toString())) {
 
-						ContentManager.instance().update(
-								Act_Check.this.newPhoneNum,
-								getString(R.string.phone_imei1));
+						DataManager_old.instance().setThisPhoneNum(Act_Check.this.newPhoneNum);
 						
 						Toast.makeText(Act_Check.this, 
 								Act_Check.this.getString(R.string.txt_activated),

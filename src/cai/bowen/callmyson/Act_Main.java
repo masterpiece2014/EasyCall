@@ -37,14 +37,20 @@ public class Act_Main extends Activity {
 	private String[] smTemps;
 	private View currentView;
 	private int currentWallpaper;
+	private DataManager dataManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ly_main);
 		
 		smSender = new SMSender(this);
-		ContentManager.init(this);
-		ContentManager.instance().count(1);
+		
+		
+		DataManager_old.init(this);
+		DataManager_old.instance().count(1);
+		
+		dataManager = DataManager.getInstance(this);
+		dataManager.count(1);
 		
 		setupUi();
 		checkThisPhone();
@@ -86,7 +92,8 @@ public class Act_Main extends Activity {
 		
 		
 		startCount.setText(String.valueOf(
-				ContentManager.instance().getCount()
+//				DataManager_old.instance().getCount()
+				dataManager.getCount()
 			));
 		
 		selectSpn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
@@ -101,7 +108,8 @@ public class Act_Main extends Activity {
 		sendBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final String address = ContentManager.instance().getTgtPhoneNumber();
+//				final String address = DataManager_old.instance().getTgtPhoneNumber();
+				final String address = dataManager.getTgtPhoneNumber();
 				final String content = Act_Main.this.contentEditor.getText().toString();
 				if (content.length() > 0) {
 					Act_Main.this.contentEditor.setText(getResources().getString(R.string.txt_sms_hint));
@@ -113,7 +121,8 @@ public class Act_Main extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(Intent.ACTION_CALL);
-				final String address = ContentManager.instance().getTgtPhoneNumber();
+//				final String address = DataManager_old.instance().getTgtPhoneNumber();
+				final String address = dataManager.getTgtPhoneNumber();
 				intent.setData(Uri.parse("tel:" + address));
 				Act_Main.this.startActivity(intent);
 			}
@@ -125,7 +134,16 @@ public class Act_Main extends Activity {
 				Act_Main.this.startActivityForResult(intent, ACT_CODE_CONFIG);
 			}
 		});
-    }
+    }// OnCreat
+//    @Override 
+//    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,  float velocityY) {   
+//
+//    //dosomething  
+//    	return false;   
+//    }
+//    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,float velocityY) {
+//        return false;
+//    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) { 
     	switch (requestCode) {
@@ -148,7 +166,8 @@ public class Act_Main extends Activity {
     
     void setupUi() {
     	currentView = findViewById(id.content);
-    	currentWallpaper = ContentManager.instance().getRandomBackgroundID();
+//    	currentWallpaper = DataManager_old.instance().getRandomBackgroundID();
+    	currentWallpaper = dataManager.getRandomBackgroundID();
 //		callBtn.setAlpha(0.75F);
 		this.currentView.setBackgroundResource(currentWallpaper);
 		
@@ -166,7 +185,8 @@ public class Act_Main extends Activity {
     	
 		contentEditor.setText(getString(R.string.txt_sms_hint));
 
-		this.smTemps = ContentManager.instance().getSmTemplates();
+//		this.smTemps = DataManager_old.instance().getTemplates();
+		this.smTemps = dataManager.getTemplates();
 //System.out.println(">>> " + smTemps.length);
 //for(String string : smTemps) {
 //	System.out.println("=====>>> " + string);
@@ -189,9 +209,14 @@ public class Act_Main extends Activity {
 		String phoneNum = tm.getLine1Number();
 
 		int problem = 0;
-		if (imei.hashCode() != ContentManager.instance().getThisIMEIHash()) {
+//		if (imei.hashCode() != DataManager_old.instance().getThisIMEIHash()) {
+//			problem = -1;
+//		} else if ( !phoneNum.equals(DataManager_old.instance().getThisPhoneNum())) {
+//			problem = 1;
+//		}
+		if (imei.hashCode() != dataManager.getThisIMEIHash()) {
 			problem = -1;
-		} else if ( !phoneNum.equals(ContentManager.instance().getThisPhoneNum())) {
+		} else if ( !phoneNum.equals(dataManager.getThisPhoneNum())) {
 			problem = 1;
 		}
 		

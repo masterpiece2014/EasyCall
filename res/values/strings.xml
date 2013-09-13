@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">便捷电话</string>
-    <string name="app_version">软件版本： 1.0</string>
     <string name="app_author">作者：蔡博文</string>
-    <string name="app_build_time">build time: 2013.9.9</string>
+    <string name="txt_app_version">软件版本：</string>
+    <integer name="app_version">20130913</integer>
+    <integer name="wallpaper_num">78</integer>
     <string name="phone_num_son">18392387786</string>
     <string name="phone_num_mo">13657192845</string>
     <string name="phone_num_fa">13636234716</string>
@@ -47,4 +48,10 @@
 	<string name="txt_set_wallpaper">将此背景图片设为手机壁纸吗？</string>
     <string name="txt_ok">设置</string>
     <string name="txt_cancel">取消</string>
+    <string-array name="txt_sm_templates">
+        <item >见信回电话。</item>
+        <item >现在较忙，一会儿再说。</item>
+        <item >来信已收到。</item>
+        <item >来信未收到。</item>
+    </string-array>
 </resources>

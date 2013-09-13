@@ -15,7 +15,7 @@ import android.content.SharedPreferences;
 import android.app.Activity;
 
 
-public class ContentManager {
+public class DataManager_old {
 
 	static final String PREFER_NAME;
 	static final String FL_DATA_NAME;
@@ -47,20 +47,20 @@ public class ContentManager {
 	private SharedPreferences shPref_;
 	private SharedPreferences.Editor editor_;
 	
-	private static ContentManager classHandler= null;
+	private static DataManager_old classHandler= null;
 	
 	static void init(final Activity act) {
 		if (null == classHandler) {
-			classHandler = new ContentManager(act);
+			classHandler = new DataManager_old(act);
 		}
 	}
-	static ContentManager instance() {
+	static DataManager_old instance() {
 		if (null == classHandler) {
-			throw new NullPointerException("ContentManager uninitialized!");
+			throw new NullPointerException("DataManager_old uninitialized!");
 		}
 		return classHandler;
 	}
-	private ContentManager(final Activity act) {
+	private DataManager_old(final Activity act) {
 		this.parent_ = act;
 		this.res_ = R.drawable.class;
 		shPref_ = parent_.getSharedPreferences(PREFER_NAME, Context.MODE_PRIVATE);  
@@ -68,29 +68,23 @@ public class ContentManager {
 		long count = shPref_.getLong(ATT_COUNT, 0L);
 		if (0L == count) {
 
-			this.update(parent_.getString(R.string.phone_num_mo),
-						parent_.getString(R.string.phone_imei1));
+			this.setThisPhoneNum(parent_.getString(R.string.phone_num_mo));
+			editor_.putString(ATT_THIS_PHONE_IMEI, parent_.getString(R.string.phone_imei1));
+			
 			editor_.putString(ATT_TGT_PHONE_NUM, parent_.getString(R.string.phone_num_son));
 			
-			addSmTemplate(parent_.getString(R.string.txt_sm_template1));
-			addSmTemplate(parent_.getString(R.string.txt_sm_template2));
-			addSmTemplate(parent_.getString(R.string.txt_sm_template3));
-			addSmTemplate(parent_.getString(R.string.txt_sm_template4));
+			addTemplate(parent_.getString(R.string.txt_sm_template1));
+			addTemplate(parent_.getString(R.string.txt_sm_template2));
+			addTemplate(parent_.getString(R.string.txt_sm_template3));
+			addTemplate(parent_.getString(R.string.txt_sm_template4));
 
 			editor_.putString("Author", parent_.getString(R.string.app_author));
-			editor_.putString("Version", parent_.getString(R.string.app_version));
-			editor_.putString("Build Time", parent_.getString(R.string.app_build_time));
 			editor_.putString("First Start Time", new Date().toString());
 			
 			editor_.commit();
 		}
 	}
-	
-	void update(final String this_phone_num, final String phone_imei) {
-		editor_.putString(ATT_THIS_PHONE_NUM, this_phone_num);
-		editor_.putString(ATT_THIS_PHONE_IMEI, phone_imei);
-		editor_.commit();
-	}
+
 	
 	void count(long i) {
 		long count = shPref_.getLong(ATT_COUNT, 0L);
@@ -107,6 +101,10 @@ public class ContentManager {
 		return shPref_.getString(ATT_THIS_PHONE_IMEI, "").hashCode();
 	}
 	
+	void setThisPhoneNum(final String this_phone_num) {
+		editor_.putString(ATT_THIS_PHONE_NUM, this_phone_num);
+		editor_.commit();
+	}
 	final String getThisPhoneNum() {
 		return shPref_.getString(ATT_THIS_PHONE_NUM, "");
 	}
@@ -134,7 +132,7 @@ public class ContentManager {
 				parent_.getString(R.string.phone_num_son));
 	}
 
-	final String[] getSmTemplates() {
+	final String[] getTemplates() {
         String buf = new String();
         StringBuilder strBuilder = new StringBuilder();
 		    try {
@@ -158,7 +156,7 @@ public class ContentManager {
 		    return strBuilder.toString().split(STR_DELI);
 	}
 	
-	void addSmTemplate(final String str) {
+	void addTemplate(final String str) {
 	    try {
 	        OutputStreamWriter outStrmWriter = 
 	        		new OutputStreamWriter(
@@ -174,7 +172,7 @@ public class ContentManager {
 	    } 
 	}
 
-	void deleteSmTemplate(final String oldStr) {
+	void deleteTemplate(final String oldStr) {
 //System.out.println(">>> deleting " + oldStr);
 //        String buf = new String();
 //		    try {

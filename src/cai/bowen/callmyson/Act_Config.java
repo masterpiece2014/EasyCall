@@ -38,7 +38,7 @@ public class Act_Config extends Activity {
 		delSmTempSpn = (Spinner)findViewById(R.id.spn_select_del_sms);
 		delSmTempBtn = (Button)findViewById(R.id.btn_del_sm_temp);
 		
-		currentWallpaper = ContentManager.instance().getRandomBackgroundID();
+		currentWallpaper = DataManager_old.instance().getRandomBackgroundID();
 		View currentView = this.findViewById(id.content);
 		currentView.setBackgroundResource(currentWallpaper);
 		currentView.setLongClickable(true);
@@ -82,7 +82,7 @@ public class Act_Config extends Activity {
 				String phone = editor.getText().toString();
 				if (phone.matches("(\\d{11})|(\\+\\d{13})")) {
 					
-					ContentManager.instance().setTgtPhoneNumber(phone);
+					DataManager_old.instance().setTgtPhoneNumber(phone);
 					
 					Toast.makeText(Act_Config.this, 
 							Act_Config.this.getString(R.string.txt_finished),
@@ -105,7 +105,7 @@ public class Act_Config extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				
-				ContentManager.instance().addSmTemplate(
+				DataManager_old.instance().addTemplate(
 						editor.getText().toString());
 				
 				editor.setText("");
@@ -116,7 +116,7 @@ public class Act_Config extends Activity {
 			}
 		});
 
-		this.smTemps = ContentManager.instance().getSmTemplates();
+		this.smTemps = DataManager_old.instance().getTemplates();
 
 		if (null == smTemps && 0 == smTemps.length) {
 			smTemps = new String[]{getString(R.string.txt_sm_template1)};
@@ -140,7 +140,7 @@ public class Act_Config extends Activity {
 		delSmTempBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				ContentManager.instance().deleteSmTemplate(strToDel);
+				DataManager_old.instance().deleteTemplate(strToDel);
 			}
 		});
 		
