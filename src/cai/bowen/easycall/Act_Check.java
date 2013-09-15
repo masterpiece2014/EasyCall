@@ -1,4 +1,4 @@
-package cai.bowen.callmyson;
+package cai.bowen.easycall;
 
 import java.math.BigInteger;
 import android.os.Bundle;
@@ -78,7 +78,7 @@ public class Act_Check extends Activity {
 				public void onClick(View v) {
 					if (isValidKey(editText.getText().toString())) {
 
-						DataManager_old.instance().setThisPhoneNum(Act_Check.this.newPhoneNum);
+						DataManager.getInstance().setThisPhoneNum(Act_Check.this.newPhoneNum);
 						
 						Toast.makeText(Act_Check.this, 
 								Act_Check.this.getString(R.string.txt_activated),

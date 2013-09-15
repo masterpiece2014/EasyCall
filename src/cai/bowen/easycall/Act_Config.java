@@ -1,8 +1,7 @@
-package cai.bowen.callmyson;
-
-import java.io.IOException;
+package cai.bowen.easycall;
 
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -13,10 +12,9 @@ import android.widget.Toast;
 import android.R.id;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.WallpaperManager;
 import android.content.DialogInterface;
 
-public class Act_Config extends Activity {
+public class Act_Config extends Activity implements IBackground {
 
 	private EditText editor;
 	private Button setPhoneBtn;
@@ -26,11 +24,13 @@ public class Act_Config extends Activity {
 	private String strToDel;
 	private Spinner delSmTempSpn;
 	private Button delSmTempBtn;
-	private int currentWallpaper;
+	private int currentBgId;	// flip to change wallpaper
+	private MyGestureListener gestureListener;
+	private DataManager dataManager;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.ly_confg);
+		setContentView(R.layout.ly_config);
 		
 		editor = (EditText)findViewById(R.id.txt_new);
 		setPhoneBtn = (Button)findViewById(R.id.btn_set_phone);
@@ -38,52 +38,21 @@ public class Act_Config extends Activity {
 		delSmTempSpn = (Spinner)findViewById(R.id.spn_select_del_sms);
 		delSmTempBtn = (Button)findViewById(R.id.btn_del_sm_temp);
 		
-		currentWallpaper = DataManager_old.instance().getRandomBackgroundID();
-		View currentView = this.findViewById(id.content);
-		currentView.setBackgroundResource(currentWallpaper);
-		currentView.setLongClickable(true);
-		currentView.setOnLongClickListener(new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				new AlertDialog.Builder(Act_Config.this)
-						.setMessage(getString(R.string.txt_set_wallpaper))
-						.setNegativeButton(getString(R.string.txt_cancel),
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-									}
-								})
-						.setPositiveButton(getString(R.string.txt_ok),
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-										try {
-											WallpaperManager
-											.getInstance(Act_Config.this)
-												.setResource(
-														Act_Config.this.currentWallpaper);
-										} catch (IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										Toast.makeText(Act_Config.this, 
-												Act_Config.this.getString(R.string.txt_finished),
-												Toast.LENGTH_LONG).show();
-									}
-								}).show();
-				return false;
-			}
-		});
+		dataManager = DataManager.getInstance();
+
+		gestureListener = new MyGestureListener(this);
+		currentBgId = dataManager.getRandomBackgroundID();
+		
+
+		findViewById(id.content).setOnTouchListener(gestureListener);
+		findViewById(id.content).setBackgroundResource(currentBgId);
 		
 		setPhoneBtn.setOnClickListener(new View.OnClickListener() {
-			
 			@Override
 			public void onClick(View arg0) {
 				String phone = editor.getText().toString();
 				if (phone.matches("(\\d{11})|(\\+\\d{13})")) {
-					
-					DataManager_old.instance().setTgtPhoneNumber(phone);
-					
+					dataManager.setTgtPhoneNumber(phone);
 					Toast.makeText(Act_Config.this, 
 							Act_Config.this.getString(R.string.txt_finished),
 							Toast.LENGTH_LONG).show();
@@ -105,8 +74,9 @@ public class Act_Config extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				
-				DataManager_old.instance().addTemplate(
-						editor.getText().toString());
+//				DataManager_old.instance().addTemplate(
+//						editor.getText().toString());
+				dataManager.addTemplate(editor.getText().toString());
 				
 				editor.setText("");
 				
@@ -116,10 +86,9 @@ public class Act_Config extends Activity {
 			}
 		});
 
-		this.smTemps = DataManager_old.instance().getTemplates();
-
+		this.smTemps = dataManager.getTemplates();
 		if (null == smTemps && 0 == smTemps.length) {
-			smTemps = new String[]{getString(R.string.txt_sm_template1)};
+			smTemps = new String[]{getString(R.string.txt_sm_temp_null)};
 		}
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
 								android.R.layout.simple_spinner_item,
@@ -140,13 +109,28 @@ public class Act_Config extends Activity {
 		delSmTempBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				DataManager_old.instance().deleteTemplate(strToDel);
+//				DataManager_old.instance().deleteTemplate(strToDel);
+				dataManager.deleteTemplate(strToDel);
 			}
 		});
 		
 	}
+	@Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // or implement in activity or component. When your not assigning to a child component.
+        return gestureListener.getDetector().onTouchEvent(event); 
+    }
 
-//	delSmTempBtn
+    @Override
+    public int getCurrentBackgroundID() {
+		return currentBgId;
+	}
+    @Override
+    public void updateBackground() {
+    	this.currentBgId = dataManager.getRandomBackgroundID();
+    	this.findViewById(android.R.id.content)
+    			.setBackgroundResource(currentBgId);
+	}
 }
 
 

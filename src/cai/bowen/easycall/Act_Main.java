@@ -1,15 +1,11 @@
-package cai.bowen.callmyson;
+package cai.bowen.easycall;
 
-import java.io.IOException;
-
-import android.R.id;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.WallpaperManager;
 import android.telephony.TelephonyManager;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,12 +13,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 
-public class Act_Main extends Activity {
+//public class Act_Main extends Activity implements OnTouchListener, OnGestureListener{
+
+public class Act_Main extends Activity implements IBackground {
 
 	public static final int ACT_CODE_CONFIG = 0;
 	public static final int ACT_CODE_CHECK = 1;
@@ -32,11 +28,13 @@ public class Act_Main extends Activity {
 	private Button sendBtn;
 	private Button callBtn;
 	private Button cfgBtn;
-	private EditText contentEditor;
-	private TextView startCount;
-	private String[] smTemps;
-	private View currentView;
-	private int currentWallpaper;
+	private EditText contentEditor; // edit sm
+	private TextView startCount;	// show start count
+	private String[] smTemps;		// sm templates
+
+	int currentBgId;	// flip to change wallpaper
+	private MyGestureListener gestureListener;
+	
 	private DataManager dataManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,58 +42,18 @@ public class Act_Main extends Activity {
         setContentView(R.layout.ly_main);
 		
 		smSender = new SMSender(this);
+//		detector.setIsLongpressEnabled(true);
+		gestureListener = new MyGestureListener(this);
 		
-		
-		DataManager_old.init(this);
-		DataManager_old.instance().count(1);
-		
-		dataManager = DataManager.getInstance(this);
-		dataManager.count(1);
+		DataManager.init(this);		// get context
+		DataManager.getInstance().count(1);
+		dataManager = DataManager.getInstance();
 		
 		setupUi();
-		checkThisPhone();
-		((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(1000);
-//////////////////////////////////////////////////////////////////////////////
-		currentView.setLongClickable(true);
-		currentView.setOnLongClickListener(new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				new AlertDialog.Builder(Act_Main.this)
-						.setMessage(getString(R.string.txt_set_wallpaper))
-						.setNegativeButton(getString(R.string.txt_cancel),
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-									}
-								})
-						.setPositiveButton(getString(R.string.txt_ok),
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-										try {
-											WallpaperManager
-											.getInstance(Act_Main.this)
-												.setResource(
-													Act_Main.this.currentWallpaper);
-										} catch (IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										Toast.makeText(Act_Main.this, 
-												Act_Main.this.getString(R.string.txt_finished),
-												Toast.LENGTH_LONG).show();
-									}
-								}).show();
-				return false;
-			}
-		});
+		checkThisPhone();// check imei and this phone number
 		
-		
-		startCount.setText(String.valueOf(
-//				DataManager_old.instance().getCount()
-				dataManager.getCount()
-			));
-		
+		((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(1000); // OK, start!
+//////////////////////////////////////////////////////////////////////////////				
 		selectSpn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
@@ -108,7 +66,6 @@ public class Act_Main extends Activity {
 		sendBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-//				final String address = DataManager_old.instance().getTgtPhoneNumber();
 				final String address = dataManager.getTgtPhoneNumber();
 				final String content = Act_Main.this.contentEditor.getText().toString();
 				if (content.length() > 0) {
@@ -121,7 +78,6 @@ public class Act_Main extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(Intent.ACTION_CALL);
-//				final String address = DataManager_old.instance().getTgtPhoneNumber();
 				final String address = dataManager.getTgtPhoneNumber();
 				intent.setData(Uri.parse("tel:" + address));
 				Act_Main.this.startActivity(intent);
@@ -135,65 +91,64 @@ public class Act_Main extends Activity {
 			}
 		});
     }// OnCreat
-//    @Override 
-//    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,  float velocityY) {   
-//
-//    //dosomething  
-//    	return false;   
-//    }
-//    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,float velocityY) {
-//        return false;
-//    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) { 
     	switch (requestCode) {
-		case ACT_CODE_CHECK:
-//			int retCode = data.getIntExtra(Act_Check.RET_CODE, Act_Check.RET_REJ);
-//			if (Act_Check.RET_REJ == retCode) {
-//				this.finish();
-//			}
+		case ACT_CODE_CHECK: // return from phone check
 			if (Activity.RESULT_CANCELED == resultCode) {
 				this.finish();
 			}
 			break;
-		case ACT_CODE_CONFIG:
+		case ACT_CODE_CONFIG: // from configuration activity
 				this.updateSipnner();
 				break;
 		default:
 			break;
 		}
     }
-    
+
+	@Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // or implement in activity or component. When your not assigning to a child component.
+        return gestureListener.getDetector().onTouchEvent(event); 
+    }
+	
     void setupUi() {
-    	currentView = findViewById(id.content);
-//    	currentWallpaper = DataManager_old.instance().getRandomBackgroundID();
-    	currentWallpaper = dataManager.getRandomBackgroundID();
+    	updateBackground();
+    	findViewById(android.R.id.content).setOnTouchListener(gestureListener);
 //		callBtn.setAlpha(0.75F);
-		this.currentView.setBackgroundResource(currentWallpaper);
-		
 		this.selectSpn = (Spinner)findViewById(R.id.spn_select_sms);
 		this.sendBtn  =(Button)findViewById(R.id.btn_send_sms);		
 		this.callBtn  =(Button)findViewById(R.id.btn_call);
 		this.cfgBtn = (Button)findViewById(R.id.btn_config);
 		this.startCount = (TextView)findViewById(R.id.txt_start_count);
+			startCount.setText(String.valueOf(
+					dataManager.getCount()
+						));
 		this.contentEditor  =(EditText)findViewById(R.id.txt_sms);
 		
 		this.updateSipnner();
     }
+    @Override
+    public int getCurrentBackgroundID() {
+		return currentBgId;
+	}
+    @Override
+    public void updateBackground() {
+    	this.currentBgId = dataManager.getRandomBackgroundID();
+    	this.findViewById(android.R.id.content)
+    			.setBackgroundResource(currentBgId);
+	}
     
+	// repaint spinner
     void updateSipnner() {
-    	
 		contentEditor.setText(getString(R.string.txt_sms_hint));
 
-//		this.smTemps = DataManager_old.instance().getTemplates();
 		this.smTemps = dataManager.getTemplates();
-//System.out.println(">>> " + smTemps.length);
-//for(String string : smTemps) {
-//	System.out.println("=====>>> " + string);
-//}
 		if (null == smTemps && 0 == smTemps.length) {
 			contentEditor.setText(getString(R.string.txt_sm_temp_null));
-			smTemps = new String[]{getString(R.string.txt_sm_template1)};
+			smTemps = new String[]{getString(R.string.txt_sm_temp_null)};
 		}
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
 								android.R.layout.simple_spinner_item,
@@ -203,20 +158,17 @@ public class Act_Main extends Activity {
     }
     
 	void checkThisPhone() {
-		
 		TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
 		String imei = tm.getDeviceId();
 		String phoneNum = tm.getLine1Number();
 
 		int problem = 0;
-//		if (imei.hashCode() != DataManager_old.instance().getThisIMEIHash()) {
-//			problem = -1;
-//		} else if ( !phoneNum.equals(DataManager_old.instance().getThisPhoneNum())) {
-//			problem = 1;
-//		}
+
 		if (imei.hashCode() != dataManager.getThisIMEIHash()) {
+			// imei error, will exit
 			problem = -1;
 		} else if ( !phoneNum.equals(dataManager.getThisPhoneNum())) {
+			// this phone number changed, require reactivate
 			problem = 1;
 		}
 		
@@ -229,7 +181,7 @@ public class Act_Main extends Activity {
 			this.startActivityForResult(intent, ACT_CODE_CHECK);
 		}
 	}
-	
+
 }
 
 

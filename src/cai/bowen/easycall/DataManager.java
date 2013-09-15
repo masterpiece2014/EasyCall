@@ -1,4 +1,4 @@
-package cai.bowen.callmyson;
+package cai.bowen.easycall;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -12,10 +12,9 @@ import java.util.Random;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.app.Activity;
 
 
-public class DataManager_old {
+public class DataManager {
 
 	static final String PREFER_NAME;
 	static final String FL_DATA_NAME;
@@ -42,43 +41,44 @@ public class DataManager_old {
 	}
 	
 	private final Class<R.drawable> res_;
-	private final Activity parent_;
+	private final Context context;
 	
 	private SharedPreferences shPref_;
 	private SharedPreferences.Editor editor_;
 	
-	private static DataManager_old classHandler= null;
 	
-	static void init(final Activity act) {
-		if (null == classHandler) {
-			classHandler = new DataManager_old(act);
+	private static DataManager class_handler = null;
+	public static void init(final Context ct) {
+		if (null == class_handler) {
+			class_handler = new DataManager(ct);
 		}
 	}
-	static DataManager_old instance() {
-		if (null == classHandler) {
-			throw new NullPointerException("DataManager_old uninitialized!");
+	public static DataManager getInstance() {
+		if (null == class_handler) {
+			throw new NullPointerException("DataManager uninitialized");
 		}
-		return classHandler;
+		return class_handler;
 	}
-	private DataManager_old(final Activity act) {
-		this.parent_ = act;
+	private DataManager(final Context act) {
+		this.context = act;
 		this.res_ = R.drawable.class;
-		shPref_ = parent_.getSharedPreferences(PREFER_NAME, Context.MODE_PRIVATE);  
+		shPref_ = context.getSharedPreferences(PREFER_NAME, Context.MODE_PRIVATE);  
 		editor_ = shPref_.edit();
 		long count = shPref_.getLong(ATT_COUNT, 0L);
 		if (0L == count) {
 
-			this.setThisPhoneNum(parent_.getString(R.string.phone_num_mo));
-			editor_.putString(ATT_THIS_PHONE_IMEI, parent_.getString(R.string.phone_imei1));
+			this.setThisPhoneNum(context.getString(R.string.phone_num_mo));
+			editor_.putString(ATT_THIS_PHONE_IMEI, context.getString(R.string.phone_imei1));
 			
-			editor_.putString(ATT_TGT_PHONE_NUM, parent_.getString(R.string.phone_num_son));
-			
-			addTemplate(parent_.getString(R.string.txt_sm_template1));
-			addTemplate(parent_.getString(R.string.txt_sm_template2));
-			addTemplate(parent_.getString(R.string.txt_sm_template3));
-			addTemplate(parent_.getString(R.string.txt_sm_template4));
+			editor_.putString(ATT_TGT_PHONE_NUM, context.getString(R.string.phone_num_son));
 
-			editor_.putString("Author", parent_.getString(R.string.app_author));
+			final String[] smTemps = context.getResources().getStringArray(
+										R.array.txt_sm_templates);
+			for (final String str : smTemps) {
+				addTemplate(str);
+			}
+
+			editor_.putString("Author", context.getString(R.string.app_author));
 			editor_.putString("First Start Time", new Date().toString());
 			
 			editor_.commit();
@@ -110,7 +110,7 @@ public class DataManager_old {
 	}
 	
 	int getRandomBackgroundID() {
-		String wallpCode = new String(parent_.getString(R.string.name_wallpaper_perfix));
+		String wallpCode = new String(context.getString(R.string.name_wallpaper_perfix));
 		wallpCode += String.valueOf(new Random().nextInt(WALLPARER_NUM));
 		try {
 			Field wallpField = res_.getField(wallpCode);
@@ -129,14 +129,14 @@ public class DataManager_old {
 	
 	final String getTgtPhoneNumber() {
 		return shPref_.getString(ATT_TGT_PHONE_NUM,
-				parent_.getString(R.string.phone_num_son));
+				context.getString(R.string.phone_num_son));
 	}
 
 	final String[] getTemplates() {
         String buf = new String();
         StringBuilder strBuilder = new StringBuilder();
 		    try {
-		        InputStream inStrm = parent_.openFileInput(FL_DATA_NAME);
+		        InputStream inStrm = context.openFileInput(FL_DATA_NAME);
 		        if ( inStrm != null ) {
 		            InputStreamReader inStrmReader = new InputStreamReader(inStrm);
 		            BufferedReader bufReader = new BufferedReader(inStrmReader);
@@ -160,7 +160,7 @@ public class DataManager_old {
 	    try {
 	        OutputStreamWriter outStrmWriter = 
 	        		new OutputStreamWriter(
-	        				parent_.openFileOutput(FL_DATA_NAME, Context.MODE_APPEND)
+	        				context.openFileOutput(FL_DATA_NAME, Context.MODE_APPEND)
 	        				);
 	        outStrmWriter.append(str);
 //System.out.println(">>> adding " + str);

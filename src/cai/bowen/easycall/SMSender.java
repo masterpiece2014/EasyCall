@@ -1,4 +1,4 @@
-package cai.bowen.callmyson;
+package cai.bowen.easycall;
 
 import java.util.List;
 
@@ -17,81 +17,81 @@ public class SMSender {
 	static {
 		smsManager_ = SmsManager.getDefault();	
 	}
-	private final String SM_SENT_;
-	private final String SM_DELIVERED_;
+	private final String SM_SENT;
+	private final String SM_DELIVERED;
 
-	private final Activity parent_;
+	private final Context context;
 	private final PendingIntent sendPIntent_;
 	private final PendingIntent deliveredPIntent_;
 	
-	public SMSender(final Activity obj) {
+	public SMSender(final Context obj) {
 		
-		this.parent_ = obj;	
+		this.context = obj;	
 
-		SM_DELIVERED_ = parent_.getResources().getString(R.string.txt_sms_delivered);
-		SM_SENT_ = parent_.getResources().getString(R.string.txt_sms_sent);
+		SM_DELIVERED = context.getResources().getString(R.string.txt_sms_delivered);
+		SM_SENT = context.getResources().getString(R.string.txt_sms_sent);
 		
-		sendPIntent_ = PendingIntent.getBroadcast(parent_, 0, new Intent(
-				SM_SENT_), 0);
+		sendPIntent_ = PendingIntent.getBroadcast(context, 0, new Intent(
+				SM_SENT), 0);
 
-		deliveredPIntent_ = PendingIntent.getBroadcast(parent_, 0, new Intent(
-			SM_DELIVERED_), 0);
+		deliveredPIntent_ = PendingIntent.getBroadcast(context, 0, new Intent(
+			SM_DELIVERED), 0);
 	}
 
 	public void sendSMessage(final String phoneNumber, final String message) {
-		parent_.registerReceiver(new BroadcastReceiver() {
+		context.registerReceiver(new BroadcastReceiver() {
 			public void onReceive(Context arg0, Intent arg1) {
 				switch (getResultCode()) {
 				case Activity.RESULT_OK:
-					Toast.makeText(parent_.getBaseContext(), SM_SENT_,
+					Toast.makeText(context, SM_SENT,
 							Toast.LENGTH_SHORT).show();
 					break;
 				case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-					Toast.makeText(parent_.getBaseContext(), 
-							parent_.getResources().getString(R.string.txt_general_failure),
+					Toast.makeText(context, 
+							context.getString(R.string.txt_general_failure),
 							Toast.LENGTH_SHORT).show();
 					break;
 				case SmsManager.RESULT_ERROR_NO_SERVICE:
-					Toast.makeText(parent_.getBaseContext(),
-							parent_.getResources().getString(R.string.txt_no_service),
+					Toast.makeText(context,
+							context.getString(R.string.txt_no_service),
 							Toast.LENGTH_SHORT).show();
 					break;
 				case SmsManager.RESULT_ERROR_NULL_PDU:
-					Toast.makeText(parent_.getBaseContext(), 
-							parent_.getResources().getString(R.string.txt_null_pdu),
+					Toast.makeText(context, 
+							context.getString(R.string.txt_null_pdu),
 							Toast.LENGTH_SHORT).show();
 					break;
 				case SmsManager.RESULT_ERROR_RADIO_OFF:
-					Toast.makeText(parent_.getBaseContext(), 
-							parent_.getResources().getString(R.string.txt_radio_off),
+					Toast.makeText(context, 
+							context.getString(R.string.txt_radio_off),
 							Toast.LENGTH_SHORT).show();
 					break;
 				}
 			}
-		}, new IntentFilter(SM_SENT_));
+		}, new IntentFilter(SM_SENT));
 
-		parent_.registerReceiver(new BroadcastReceiver() {
+		context.registerReceiver(new BroadcastReceiver() {
 			public void onReceive(Context arg0, Intent arg1) {
 				switch (getResultCode()) {
 				case Activity.RESULT_OK:
-					Toast.makeText(parent_.getBaseContext(), SM_DELIVERED_,
+					Toast.makeText(context, SM_DELIVERED,
 							Toast.LENGTH_SHORT).show();
 					break;
 				case Activity.RESULT_CANCELED:
-					Toast.makeText(parent_.getBaseContext(),
-							parent_.getResources().getString(R.string.txt_general_failure),
+					Toast.makeText(context,
+							context.getResources().getString(R.string.txt_general_failure),
 							Toast.LENGTH_SHORT).show();
 					break;
 				}
 			}
-		}, new IntentFilter(SM_DELIVERED_));
+		}, new IntentFilter(SM_DELIVERED));
 		
 		List<String>   contentList = smsManager_.divideMessage(message);
 		for (String str : contentList) {
 			SMSender.smsManager_.sendTextMessage(phoneNumber, null, str,
 				sendPIntent_, deliveredPIntent_);
 		}
-		Toast.makeText(parent_, parent_.getString(R.string.txt_sms_sent), Toast.LENGTH_LONG).show();
+		Toast.makeText(context, context.getString(R.string.txt_sms_sent), Toast.LENGTH_LONG).show();
 	}
 }
 
