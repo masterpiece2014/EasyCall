@@ -16,9 +16,7 @@ import android.widget.TextView;
 import android.content.Context;
 import android.content.Intent;
 
-//public class Act_Main extends Activity implements OnTouchListener, OnGestureListener{
-
-public class Act_Main extends Activity implements IBackground {
+public class Act_Main extends Activity implements IConfigurable {
 
 	public static final int ACT_CODE_CONFIG = 0;
 	public static final int ACT_CODE_CHECK = 1;
@@ -30,10 +28,10 @@ public class Act_Main extends Activity implements IBackground {
 	private Button cfgBtn;
 	private EditText contentEditor; // edit sm
 	private TextView startCount;	// show start count
-	private String[] smTemps;		// sm templates
 
-	int currentBgId;	// flip to change wallpaper
 	private MyGestureListener gestureListener;
+	int currentBackgroundID;
+	String[] smTemplates;
 	
 	private DataManager dataManager;
     @Override
@@ -43,12 +41,13 @@ public class Act_Main extends Activity implements IBackground {
 		
 		smSender = new SMSender(this);
 //		detector.setIsLongpressEnabled(true);
-		gestureListener = new MyGestureListener(this);
 		
 		DataManager.init(this);		// get context
 		DataManager.getInstance().count(1);
 		dataManager = DataManager.getInstance();
-		
+		currentBackgroundID = R.drawable.wallpaper_0;
+		smTemplates = null;
+		gestureListener = new MyGestureListener(this);
 		setupUi();
 		checkThisPhone();// check imei and this phone number
 		
@@ -58,7 +57,7 @@ public class Act_Main extends Activity implements IBackground {
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
-				Act_Main.this.contentEditor.setText(Act_Main.this.smTemps[position]);
+				Act_Main.this.contentEditor.setText(Act_Main.this.smTemplates[position]);
 			}
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {}
@@ -101,7 +100,7 @@ public class Act_Main extends Activity implements IBackground {
 			}
 			break;
 		case ACT_CODE_CONFIG: // from configuration activity
-				this.updateSipnner();
+				this.updateSpinner();
 				break;
 		default:
 			break;
@@ -110,12 +109,11 @@ public class Act_Main extends Activity implements IBackground {
 
 	@Override
     public boolean onTouchEvent(MotionEvent event) {
-        // or implement in activity or component. When your not assigning to a child component.
-        return gestureListener.getDetector().onTouchEvent(event); 
+		return gestureListener.getDetector().onTouchEvent(event); 
     }
 	
     void setupUi() {
-    	updateBackground();
+    	switchBackground();
     	findViewById(android.R.id.content).setOnTouchListener(gestureListener);
 //		callBtn.setAlpha(0.75F);
 		this.selectSpn = (Spinner)findViewById(R.id.spn_select_sms);
@@ -127,36 +125,33 @@ public class Act_Main extends Activity implements IBackground {
 					dataManager.getCount()
 						));
 		this.contentEditor  =(EditText)findViewById(R.id.txt_sms);
-		
-		this.updateSipnner();
+		this.updateSpinner();
     }
     @Override
     public int getCurrentBackgroundID() {
-		return currentBgId;
+		return currentBackgroundID;
 	}
     @Override
-    public void updateBackground() {
-    	this.currentBgId = dataManager.getRandomBackgroundID();
+    public void switchBackground() {
+    	this.currentBackgroundID = dataManager.getRandomBackgroundID();
     	this.findViewById(android.R.id.content)
-    			.setBackgroundResource(currentBgId);
+    			.setBackgroundResource(currentBackgroundID);
 	}
     
-	// repaint spinner
-    void updateSipnner() {
-		contentEditor.setText(getString(R.string.txt_sms_hint));
-
-		this.smTemps = dataManager.getTemplates();
-		if (null == smTemps && 0 == smTemps.length) {
+	@Override
+	public void updateSpinner() {
+		this.smTemplates = dataManager.getTemplates();
+		if (null == smTemplates && 0 == smTemplates.length) {
 			contentEditor.setText(getString(R.string.txt_sm_temp_null));
-			smTemps = new String[]{getString(R.string.txt_sm_temp_null)};
+			smTemplates = new String[]{getString(R.string.txt_sm_temp_null)};
 		}
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
 								android.R.layout.simple_spinner_item,
-								smTemps);
+								smTemplates);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		selectSpn.setAdapter(adapter);
-    }
-    
+	}
+
 	void checkThisPhone() {
 		TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
 		String imei = tm.getDeviceId();

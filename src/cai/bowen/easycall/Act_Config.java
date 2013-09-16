@@ -14,43 +14,87 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 
-public class Act_Config extends Activity implements IBackground {
+public class Act_Config extends Activity implements IConfigurable {
 
-	private EditText editor;
-	private Button setPhoneBtn;
+	private EditText smTempEditor;
 	private Button addSmTempBtn;
 
-	private String[] smTemps;
 	private String strToDel;
 	private Spinner delSmTempSpn;
 	private Button delSmTempBtn;
-	private int currentBgId;	// flip to change wallpaper
+	
+	private Button setPhoneBtn;
+	private EditText phoneNumEditor;
+	
+	int currentBackgroundID;
+	String[] smTemplates;
+	
 	private MyGestureListener gestureListener;
 	private DataManager dataManager;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ly_config);
 		
-		editor = (EditText)findViewById(R.id.txt_new);
-		setPhoneBtn = (Button)findViewById(R.id.btn_set_phone);
+		dataManager = DataManager.getInstance();
+		int currentBackgroundID = dataManager.getRandomBackgroundID();
+		gestureListener = new MyGestureListener(this);
+		
+		smTempEditor = (EditText)findViewById(R.id.txt_new_sm_temp);
 		addSmTempBtn = (Button)findViewById(R.id.btn_new_sm_temp);
 		delSmTempSpn = (Spinner)findViewById(R.id.spn_select_del_sms);
 		delSmTempBtn = (Button)findViewById(R.id.btn_del_sm_temp);
-		
-		dataManager = DataManager.getInstance();
 
-		gestureListener = new MyGestureListener(this);
-		currentBgId = dataManager.getRandomBackgroundID();
+		phoneNumEditor = (EditText)findViewById(R.id.txt_new_phone_num);
+		phoneNumEditor.setHint(dataManager.getTgtPhoneNumber());
+		setPhoneBtn = (Button)findViewById(R.id.btn_set_phone);
 		
 
 		findViewById(id.content).setOnTouchListener(gestureListener);
-		findViewById(id.content).setBackgroundResource(currentBgId);
+		findViewById(id.content).setBackgroundResource(currentBackgroundID);
+		
+		updateSpinner();
+///////////////////////////////////////////////////////////
+		addSmTempBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				
+				dataManager.addTemplate(smTempEditor.getText().toString());
+				smTempEditor.setText("");
+				Act_Config.this.updateSpinner();
+				Toast.makeText(Act_Config.this, 
+						Act_Config.this.getString(R.string.txt_finished),
+						Toast.LENGTH_LONG).show();
+			}
+		});
+		
+		delSmTempSpn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View arg1,
+					int position, long arg3) {				
+				Act_Config.this.strToDel = Act_Config.this.smTemplates[position];
+			}
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {}
+		});
+
+		delSmTempBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				
+				dataManager.deleteTemplate(strToDel);				
+				Act_Config.this.updateSpinner();				
+				Toast.makeText(Act_Config.this, 
+						Act_Config.this.getString(R.string.txt_finished),
+						Toast.LENGTH_LONG).show();
+			}
+		});
 		
 		setPhoneBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				String phone = editor.getText().toString();
+				String phone = phoneNumEditor.getText().toString();
 				if (phone.matches("(\\d{11})|(\\+\\d{13})")) {
 					dataManager.setTgtPhoneNumber(phone);
 					Toast.makeText(Act_Config.this, 
@@ -66,70 +110,37 @@ public class Act_Config extends Activity implements IBackground {
 				     })
 				     .show();
 				}
-				editor.setText("");
+				smTempEditor.setText("");
 			}
 		});
-		
-		addSmTempBtn.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				
-//				DataManager_old.instance().addTemplate(
-//						editor.getText().toString());
-				dataManager.addTemplate(editor.getText().toString());
-				
-				editor.setText("");
-				
-				Toast.makeText(Act_Config.this, 
-						Act_Config.this.getString(R.string.txt_finished),
-						Toast.LENGTH_LONG).show();
-			}
-		});
-
-		this.smTemps = dataManager.getTemplates();
-		if (null == smTemps && 0 == smTemps.length) {
-			smTemps = new String[]{getString(R.string.txt_sm_temp_null)};
-		}
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-								android.R.layout.simple_spinner_item,
-								smTemps);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		delSmTempSpn.setAdapter(adapter);
-		
-		delSmTempSpn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-					int position, long arg3) {
-				Act_Config.this.strToDel = Act_Config.this.smTemps[position];
-			}
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {}
-		});
-
-		delSmTempBtn.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-//				DataManager_old.instance().deleteTemplate(strToDel);
-				dataManager.deleteTemplate(strToDel);
-			}
-		});
-		
-	}
+	} // onCreat
+	
 	@Override
     public boolean onTouchEvent(MotionEvent event) {
-        // or implement in activity or component. When your not assigning to a child component.
-        return gestureListener.getDetector().onTouchEvent(event); 
+		return gestureListener.getDetector().onTouchEvent(event); 
     }
 
     @Override
     public int getCurrentBackgroundID() {
-		return currentBgId;
+		return currentBackgroundID;
 	}
     @Override
-    public void updateBackground() {
-    	this.currentBgId = dataManager.getRandomBackgroundID();
+    public void switchBackground() {
+    	this.currentBackgroundID = dataManager.getRandomBackgroundID();
     	this.findViewById(android.R.id.content)
-    			.setBackgroundResource(currentBgId);
+    			.setBackgroundResource(currentBackgroundID);
+	}
+	@Override
+	public void updateSpinner() {
+		this.smTemplates = dataManager.getTemplates();
+		if (null == smTemplates && 0 == smTemplates.length) {
+			smTemplates = new String[]{getString(R.string.txt_sm_temp_null)};
+		}
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+								android.R.layout.simple_spinner_item,
+								smTemplates);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		delSmTempSpn.setAdapter(adapter);
 	}
 }
 

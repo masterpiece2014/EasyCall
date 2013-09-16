@@ -3,7 +3,7 @@
     <string name="app_name">便捷電話</string>
     <string name="app_author">作者：蔡博文</string>
     <string name="txt_app_version">軟體版本：</string>
-    <integer name="app_version">20130913</integer>
+    <integer name="app_version">20130916</integer>
     <integer name="wallpaper_num">78</integer>
     <string name="phone_num_son">18392387786</string>
     <string name="phone_num_mo">13657192845</string>

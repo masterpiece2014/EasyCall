@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
@@ -40,9 +41,9 @@ public class MyGestureListener extends SimpleOnGestureListener implements OnTouc
 							WallpaperManager
 							.getInstance(activity)
 								.setResource(
-										((IBackground)activity).getCurrentBackgroundID());
+										((IConfigurable)activity).getCurrentBackgroundID());
 						} catch (IOException e) {
-							e.printStackTrace();
+							Log.e("onLongPress WallpaperManager", e.toString());
 						}
 						Toast.makeText(activity, 
 								activity.getString(R.string.txt_finished),
@@ -56,9 +57,9 @@ public class MyGestureListener extends SimpleOnGestureListener implements OnTouc
 		
 		float delta_X = me1.getX() - me2.getX();
 		delta_X = delta_X > 0 ? delta_X : - delta_X;
-		if (delta_X > 220F) {
+		if (delta_X > 200F) {
 			
-			((IBackground)activity).updateBackground();
+			((IConfigurable)activity).switchBackground();
 	    	
 //			int currentBackground = mainAct.getCurrentBackgroundID();
 //			int nextBackground = DataManager.getInstance().getRandomBackgroundID();

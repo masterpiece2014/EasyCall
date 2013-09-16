@@ -1,51 +1,28 @@
 package cai.bowen.easycall;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
-
-public class DataManager {
-
-	static final String PREFER_NAME;
-	static final String FL_DATA_NAME;
-//	static final String FL_TEMP_NAME;
-	static final String STR_DELI;
+public class DataManager extends SQLiteOpenHelper {
 	
-	static final String ATT_THIS_PHONE_NUM;
-	static final String ATT_TGT_PHONE_NUM;
-	static final String ATT_COUNT;
-	static final String ATT_THIS_PHONE_IMEI;
-	static final int WALLPARER_NUM;
-	static {
-		PREFER_NAME = "CallMySon_Pref";
-		FL_DATA_NAME = "CallMySon_Data";
-//		FL_TEMP_NAME = "CallMySon_Temp";
-		STR_DELI = "###";
-		
-		ATT_THIS_PHONE_NUM = "this_phone_number";
-		ATT_TGT_PHONE_NUM = "target_phone_to_call";
-		ATT_COUNT = "app_start_count";
-		ATT_THIS_PHONE_IMEI = "this_phone_imei_hash";
-		 // 78 pictures, from "wallpaper_0.jpg to "wallpaper_77.jpg"
-		WALLPARER_NUM = 78;// int "new Random(78).nextInt()", 78 is exclusive.
+	private final int WALLPARER_NUM;
+	
+	private Context context = null;
+	
+	private DataManager(Context context) {
+		super(context, DB_NAME, null, DB_VERSION);
+		this.context = context;
+		WALLPARER_NUM = context.getResources().getInteger(R.integer.wallpaper_num);
 	}
-	
-	private final Class<R.drawable> res_;
-	private final Context context;
-	
-	private SharedPreferences shPref_;
-	private SharedPreferences.Editor editor_;
-	
 	
 	private static DataManager class_handler = null;
 	public static void init(final Context ct) {
@@ -59,153 +36,215 @@ public class DataManager {
 		}
 		return class_handler;
 	}
-	private DataManager(final Context act) {
-		this.context = act;
-		this.res_ = R.drawable.class;
-		shPref_ = context.getSharedPreferences(PREFER_NAME, Context.MODE_PRIVATE);  
-		editor_ = shPref_.edit();
-		long count = shPref_.getLong(ATT_COUNT, 0L);
-		if (0L == count) {
-
-			this.setThisPhoneNum(context.getString(R.string.phone_num_mo));
-			editor_.putString(ATT_THIS_PHONE_IMEI, context.getString(R.string.phone_imei1));
-			
-			editor_.putString(ATT_TGT_PHONE_NUM, context.getString(R.string.phone_num_son));
-
-			final String[] smTemps = context.getResources().getStringArray(
-										R.array.txt_sm_templates);
-			for (final String str : smTemps) {
-				addTemplate(str);
-			}
-
-			editor_.putString("Author", context.getString(R.string.app_author));
-			editor_.putString("First Start Time", new Date().toString());
-			
-			editor_.commit();
-		}
-	}
-
-	
-	void count(long i) {
-		long count = shPref_.getLong(ATT_COUNT, 0L);
-		count += i;
-		editor_.putLong(ATT_COUNT, count);
-		editor_.commit();
-	}
-	
-	long getCount() {
-		return shPref_.getLong(ATT_COUNT, 0);
-	}
-	
-	int getThisIMEIHash() {
-		return shPref_.getString(ATT_THIS_PHONE_IMEI, "").hashCode();
-	}
-	
-	void setThisPhoneNum(final String this_phone_num) {
-		editor_.putString(ATT_THIS_PHONE_NUM, this_phone_num);
-		editor_.commit();
-	}
-	final String getThisPhoneNum() {
-		return shPref_.getString(ATT_THIS_PHONE_NUM, "");
-	}
 	
 	int getRandomBackgroundID() {
 		String wallpCode = new String(context.getString(R.string.name_wallpaper_perfix));
 		wallpCode += String.valueOf(new Random().nextInt(WALLPARER_NUM));
 		try {
-			Field wallpField = res_.getField(wallpCode);
+			Field wallpField = R.drawable.class.getField(wallpCode);
 			return wallpField.getInt(wallpField);
 		} catch (Exception e) {
-//			e.printStackTrace();
-//System.out.println(e.toString());
+			e.printStackTrace();
 			return R.drawable.wallpaper_0;
 		}
 	}
+/////////////////////DATA BASE///////////////////////////
+	static final String DB_NAME;
+	static final int DB_VERSION;
+				// Common attributes of two tables
+    static final String FLD_ID;
+    
+    //		// first table: store unique data
+	static final String TABLE_UNIQUE;
 	
-	void setTgtPhoneNumber(final String num) {
-		editor_.putString(ATT_TGT_PHONE_NUM, num);
-		editor_.commit();
+    static final String FLD_COUNT;
+    static final String FLD_THIS_PHONE_NUM;
+    static final String FLD_TGT_PHONE_NUM;
+    static final String FLD_THIS_PHONE_IMEI;
+    			//second table, store sm templates and data modified date
+	static final String TABLE_VARIABLE;
+    static final String FLD_SM_TEMPLATES;
+    static final String FLD_MODIFIED_DATE;
+    
+    static final String TAG_CURSOR_ERROR;
+    static final String TAG_DB_ERROR;
+	static {
+		DB_NAME = "EasyCall_database";
+		DB_VERSION = 20130916;
+		TABLE_UNIQUE = "Table_Unique";
+		FLD_ID = "_id";
+	    FLD_COUNT = "AppStartCount";
+	    FLD_THIS_PHONE_NUM = "ThisPhoneNumber";
+	    FLD_THIS_PHONE_IMEI = "ThisPhoneIMEI";
+	    FLD_TGT_PHONE_NUM = "TargetPhoneNumber";
+	    
+		TABLE_VARIABLE = "Table_UsageData";
+	    FLD_SM_TEMPLATES = "SmTemplates";
+	    FLD_MODIFIED_DATE = "ModifiedDate";
+	    TAG_CURSOR_ERROR = "Cursor error";
+	    TAG_DB_ERROR = "Database error";
+	}
+
+	@Override
+	public void onCreate(SQLiteDatabase database) {
+	        database.execSQL(
+	        		"CREATE TABLE IF NOT EXISTS " + TABLE_UNIQUE 
+	        		+ " ( "
+        				+ FLD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+        				+ FLD_COUNT 			+ " INTEGER, "
+        				+ FLD_THIS_PHONE_NUM 	+ " TEXT, "
+        				+ FLD_THIS_PHONE_IMEI 	+ " TEXT, "
+        				+ FLD_TGT_PHONE_NUM 	+ " TEXT "
+        			+ " ) ");
+
+	        database.execSQL(
+	        		"CREATE TABLE IF NOT EXISTS " + TABLE_VARIABLE 
+	        		+ "(" 
+        				+ FLD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+        				+ FLD_SM_TEMPLATES 	+ " TEXT, "
+        				+ FLD_MODIFIED_DATE 	+ " TEXT "
+        			+ " )");
+	        ContentValues cv = new ContentValues(); 
+	        cv.put(FLD_COUNT, 0);
+	        cv.put(FLD_THIS_PHONE_NUM, this.context.getString(R.string.phone_num_mo));
+	        cv.put(FLD_THIS_PHONE_IMEI, this.context.getString(R.string.phone_imei1));
+	        cv.put(FLD_TGT_PHONE_NUM, this.context.getString(R.string.phone_num_son));
+	        database.insert(TABLE_UNIQUE, null, cv);
+	        
+
+	        final String initDate = new Date().toString();
+	        final String[] smTemps = context.getResources().getStringArray(
+	        									R.array.txt_sm_templates);
+	        for(final String str : smTemps) {
+		        cv = new ContentValues(); 
+	        	cv.put(FLD_SM_TEMPLATES, str);
+		        cv.put(FLD_MODIFIED_DATE, initDate);
+		        database.insert(TABLE_VARIABLE, null, cv);
+	        }
+	}
+
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		db.execSQL(" DROP TABLE IF EXISTS " + TABLE_UNIQUE);
+		db.execSQL(" DROP TABLE IF EXISTS " + TABLE_VARIABLE);
+		onCreate(db);
+	}
+	int getCount() {
+		Cursor cursor = this.getReadableDatabase().rawQuery(
+				"SELECT " + FLD_COUNT + " FROM " + TABLE_UNIQUE + " WHERE "
+						+ FLD_ID + " = 1", null);
+		if (!cursor.moveToFirst()) {
+			Log.e(TAG_CURSOR_ERROR, "getCount moveToFirst");
+			return 0;
+		}
+		return cursor.getInt(0);// 0
 	}
 	
-	final String getTgtPhoneNumber() {
-		return shPref_.getString(ATT_TGT_PHONE_NUM,
-				context.getString(R.string.phone_num_son));
+	void count(int i) {
+		int current = getCount();
+		current += i;
+		this.getWritableDatabase().execSQL(
+				"UPDATE " + TABLE_UNIQUE 
+					+ " SET " + FLD_COUNT + " = " + current 
+						+ " where " +  FLD_ID + " = 1");
+	}
+	
+	int getThisIMEIHash() {
+		
+		Cursor cursor = this.getReadableDatabase().rawQuery(
+				"SELECT " + FLD_THIS_PHONE_IMEI
+						+ " FROM " + TABLE_UNIQUE 
+							+ " WHERE " + FLD_ID + " = 1", null);
+		if (!cursor.moveToFirst()) {
+			Log.e(TAG_CURSOR_ERROR, "getThisIMEIHash moveToFirst");
+		}
+		return cursor.getString(0).hashCode();
+	}
+	
+	void setThisPhoneNum(final String newPhoneNum) {
+		this.getWritableDatabase().execSQL(
+				"UPDATE " + TABLE_UNIQUE 
+					+ " SET " + FLD_THIS_PHONE_NUM + " = " + newPhoneNum 
+					+ " where " +  FLD_ID + " = 1");
+	}
+	
+	final String getThisPhoneNum() {
+
+		Cursor cursor = this.getReadableDatabase().rawQuery(
+				"SELECT " + FLD_THIS_PHONE_NUM 
+						+ " FROM " + TABLE_UNIQUE 
+							+ " WHERE " + FLD_ID + " =  1", null);
+
+		if (!cursor.moveToFirst()) {
+			Log.e(TAG_CURSOR_ERROR, "getThisPhoneNum moveToFirst");
+			return "13657192845";
+		}
+		return cursor.getString(0);
+	}
+
+	
+	void setTgtPhoneNumber(final String num) {
+		this.getWritableDatabase().execSQL(
+				"UPDATE " + TABLE_UNIQUE
+					+ " SET " + FLD_TGT_PHONE_NUM + " = " + num 
+					+ " where " +  FLD_ID + " = 1");
+	}
+	
+	final String getTgtPhoneNumber() {		
+		Cursor cursor = this.getReadableDatabase().rawQuery(
+				"SELECT " + FLD_THIS_PHONE_NUM 
+						+ " FROM " + TABLE_UNIQUE 
+							+ " WHERE " + FLD_ID + " =  1", null);
+
+		if (!cursor.moveToFirst()) {
+			Log.e(TAG_CURSOR_ERROR, "getTgtPhoneNumber moveToFirst");
+			return "18392387786";
+		}
+		return cursor.getString(0);
 	}
 
 	final String[] getTemplates() {
-        String buf = new String();
-        StringBuilder strBuilder = new StringBuilder();
-		    try {
-		        InputStream inStrm = context.openFileInput(FL_DATA_NAME);
-		        if ( inStrm != null ) {
-		            InputStreamReader inStrmReader = new InputStreamReader(inStrm);
-		            BufferedReader bufReader = new BufferedReader(inStrmReader);
-
-		            while ( (buf = bufReader.readLine()) != null ) {
-//System.out.println(">> readLine: " + inStr);
-		                strBuilder.append(buf);
-		            }
-		            inStrm.close();
-		        }
-		    }
-		    catch (FileNotFoundException e) {
-		        System.out.println("File not found: " + e.toString());
-		    } catch (IOException e) {
-		        System.out.println("Can not read file: " + e.toString());
-		    }
-		    return strBuilder.toString().split(STR_DELI);
+		Cursor cursor = this.getReadableDatabase().rawQuery(
+				"SELECT " + FLD_SM_TEMPLATES 
+						+ " FROM " + TABLE_VARIABLE,
+							 null);
+	ArrayList<String> strs = new ArrayList<String>();
+	if (null != cursor) {
+		if (cursor.moveToFirst()) {
+			do {
+				strs.add(cursor.getString(0));
+			} while (cursor.moveToNext());
+		} else {
+			Log.e(TAG_CURSOR_ERROR, "getTemplates cursor moveToNext");
+		}
+	}else {
+		Log.e(TAG_CURSOR_ERROR, "getTemplates null cursor");
+	}
+		return strs.toArray(new String[strs.size()]);
 	}
 	
 	void addTemplate(final String str) {
-	    try {
-	        OutputStreamWriter outStrmWriter = 
-	        		new OutputStreamWriter(
-	        				context.openFileOutput(FL_DATA_NAME, Context.MODE_APPEND)
-	        				);
-	        outStrmWriter.append(str);
-//System.out.println(">>> adding " + str);
-	        outStrmWriter.append(STR_DELI);
-	        outStrmWriter.close();
-	    }
-	    catch (IOException e) {
-	        System.out.println("Exception"+ "File write failed: " + e.toString());
-	    } 
+		this.getWritableDatabase().execSQL(
+				"INSERT INTO " + TABLE_VARIABLE
+				+ " ( " + FLD_SM_TEMPLATES + " , " + FLD_MODIFIED_DATE + " ) "
+				+ " VALUES ( '" + str + "', '" + new Date().toString() + "' )" 
+				);
 	}
 
 	void deleteTemplate(final String oldStr) {
-//System.out.println(">>> deleting " + oldStr);
-//        String buf = new String();
-//		    try {
-//		        InputStream inStrm = parent_.openFileInput(FL_DATA_NAME);
-//		        if ( inStrm != null ) {
-//		            InputStreamReader inStrmReader = new InputStreamReader(inStrm);
-//		            BufferedReader bufReader = new BufferedReader(inStrmReader);
-//		            
-//			        OutputStreamWriter outStrmWriter = 
-//			        		new OutputStreamWriter(
-//			        				parent_.openFileOutput(FL_TEMP_NAME, Context.MODE_PRIVATE)
-//			        				);
-//			        
-//		            while ( (buf = bufReader.readLine()) != null ) {
-//		            	if (oldStr.equals(buf)) {
-//		            		continue;
-//		            	} else {
-//							outStrmWriter.append(buf);
-//						}
-//		            }
-//		            inStrm.close();
-//			        outStrmWriter.close();
-////			        File oldFile = parent_.getDir(FL_DATA_NAME, Context.MODE_PRIVATE);
-////			        oldFile.delete();
-////			        File tempFile = parent_.(FL_TEMP_NAME, Context.MODE_PRIVATE);
-////			        tempFile.renameTo(oldFile);
-//		        }
-//		    }
-//		    catch (FileNotFoundException e) {
-//		        System.out.println("File not found: " + e.toString());
-//		    } catch (IOException e) {
-//		        System.out.println("Can not read file: " + e.toString());
-//		    }
+		this.getWritableDatabase().execSQL(
+				"DELETE FROM " + TABLE_VARIABLE
+				+ " WHERE " + FLD_SM_TEMPLATES + " = '" + oldStr + "' ");
 	}
 	
 }
+
+
+
+
+
+
+
+
+
+

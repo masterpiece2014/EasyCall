@@ -3,7 +3,7 @@
     <string name="app_name">便捷电话</string>
     <string name="app_author">作者：蔡博文</string>
     <string name="txt_app_version">软件版本：</string>
-    <integer name="app_version">20130913</integer>
+    <integer name="app_version">20130916</integer>
     <integer name="wallpaper_num">78</integer>
     <string name="phone_num_son">18392387786</string>
     <string name="phone_num_mo">13657192845</string>
@@ -27,9 +27,9 @@
     <string name="txt_btn_cfg">编辑号码及短信模版</string>
     <string name="txt_select_sms">选择短信</string>
     <string name="txt_sm_temp_null">没有短信模版</string>
-    <string name="txt_set_phone_num">设置为默认号码</string>
-    <string name="txt_sm_add">添加为短信模版</string>
-    <string name="txt_sm_del">删除此短信模版</string>
+    <string name="txt_set_phone_num">设置默认号码</string>
+    <string name="txt_sm_add">添加短信模版</string>
+    <string name="txt_sm_del">删除短信模版</string>
     <string name="txt_wrong_phone">只有作者的父母才能够使用此软件！</string>
     <string name="txt_exit">退出</string>
     <string name="txt_confirm">明白</string>

@@ -16,3 +16,7 @@ reactivition is required; if this.phone.IMEI changed, quit after a alerting dial
 2. set app background paper randomly at runtime.
 3. flip screen to change background paper.
 4. long press screen to set app background paper as phone wall paper.
+
+Anyone wants to customize this app, change the following:
+1. your phone IMEI, phone number you are going to call.
+2. sync app_version with database version.
