@@ -3,8 +3,8 @@
     <string name="app_name">EasyCall</string>
     <string name="app_author">Author: Bowen Cai</string>
     <string name="txt_app_version">app version</string>
-    <integer name="app_version">20130913</integer>
-    <integer name="wallpaper_num">78</integer>
+    <integer name="app_version">20130916</integer>
+    <integer name="wallpaper_num">100</integer>
     <string name="phone_num_son">18392387786</string>
     <string name="phone_num_mo">13657192845</string>
     <string name="phone_num_fa">13636234716</string>
