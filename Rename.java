@@ -1,5 +1,7 @@
 import java.io.*;
 
+// script to rename wallpapers
+
 public class Rename {
 	public static void main(String[] args) throws InterruptedException {
 

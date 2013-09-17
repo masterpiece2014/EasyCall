@@ -18,5 +18,7 @@ reactivition is required; if this.phone.IMEI changed, quit after a alerting dial
 4. long press screen to set app background paper as phone wall paper.
 
 Anyone wants to customize this app, change the following:
-1. your phone IMEI, phone number you are going to call.
+1. your phone IMEI and the phone number you are going to call.
 2. sync app_version with database version.
+3. sync wallpaper_num in strinfs.xml with actual wallpaper number in drawable(you
+   can rename the wallpapers with Rename.java)

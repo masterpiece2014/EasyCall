@@ -6,6 +6,6 @@ public interface IConfigurable {
 	
 	public void switchBackground();
 	
-	public void  updateSpinner();
+	public void updateSpinner();
 	
 }

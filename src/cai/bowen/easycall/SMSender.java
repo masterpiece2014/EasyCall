@@ -23,6 +23,8 @@ public class SMSender {
 	private final Context context;
 	private final PendingIntent sendPIntent_;
 	private final PendingIntent deliveredPIntent_;
+	private BroadcastReceiver sendReceiver_;
+	private BroadcastReceiver deliveryReceiver_;
 	
 	public SMSender(final Context obj) {
 		
@@ -36,10 +38,9 @@ public class SMSender {
 
 		deliveredPIntent_ = PendingIntent.getBroadcast(context, 0, new Intent(
 			SM_DELIVERED), 0);
-	}
-
-	public void sendSMessage(final String phoneNumber, final String message) {
-		context.registerReceiver(new BroadcastReceiver() {
+		
+		sendReceiver_ = new BroadcastReceiver() {
+			@Override
 			public void onReceive(Context arg0, Intent arg1) {
 				switch (getResultCode()) {
 				case Activity.RESULT_OK:
@@ -68,9 +69,8 @@ public class SMSender {
 					break;
 				}
 			}
-		}, new IntentFilter(SM_SENT));
-
-		context.registerReceiver(new BroadcastReceiver() {
+		};
+		deliveryReceiver_ = new BroadcastReceiver() {
 			public void onReceive(Context arg0, Intent arg1) {
 				switch (getResultCode()) {
 				case Activity.RESULT_OK:
@@ -79,20 +79,35 @@ public class SMSender {
 					break;
 				case Activity.RESULT_CANCELED:
 					Toast.makeText(context,
-							context.getResources().getString(R.string.txt_general_failure),
+							context.getString(R.string.txt_general_failure),
 							Toast.LENGTH_SHORT).show();
 					break;
 				}
 			}
-		}, new IntentFilter(SM_DELIVERED));
+		};
+		context.registerReceiver(sendReceiver_, 
+								new IntentFilter(SM_SENT));
+		context.registerReceiver(deliveryReceiver_, 
+								new IntentFilter(SM_DELIVERED));
+	}
+
+	public void sendSMessage(final String phoneNumber, final String message) {
 		
 		List<String>   contentList = smsManager_.divideMessage(message);
 		for (String str : contentList) {
 			SMSender.smsManager_.sendTextMessage(phoneNumber, null, str,
 				sendPIntent_, deliveredPIntent_);
 		}
-		Toast.makeText(context, context.getString(R.string.txt_sms_sent), Toast.LENGTH_LONG).show();
+		Toast.makeText(context, 
+				context.getString(R.string.txt_sms_sent), 
+				Toast.LENGTH_LONG).show();
 	}
+	
+	protected void stop() {
+		context.unregisterReceiver(sendReceiver_);
+		context.unregisterReceiver(deliveryReceiver_);
+	}
+
 }
 
 

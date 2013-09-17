@@ -176,7 +176,11 @@ public class Act_Main extends Activity implements IConfigurable {
 			this.startActivityForResult(intent, ACT_CODE_CHECK);
 		}
 	}
-
+	@Override
+	protected void onStop() {
+		smSender.stop();
+		super.onStop();
+	}
 }
 
 
