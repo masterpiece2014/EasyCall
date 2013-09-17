@@ -104,6 +104,7 @@ public class DataManager extends SQLiteOpenHelper {
         				+ FLD_SM_TEMPLATES 	+ " TEXT, "
         				+ FLD_MODIFIED_DATE 	+ " TEXT "
         			+ " )");
+
 	        ContentValues cv = new ContentValues(); 
 	        cv.put(FLD_COUNT, 0);
 	        cv.put(FLD_THIS_PHONE_NUM, this.context.getString(R.string.phone_num_mo));
@@ -205,21 +206,19 @@ public class DataManager extends SQLiteOpenHelper {
 
 	final String[] getTemplates() {
 		Cursor cursor = this.getReadableDatabase().rawQuery(
-				"SELECT " + FLD_SM_TEMPLATES 
-						+ " FROM " + TABLE_VARIABLE,
-							 null);
-	ArrayList<String> strs = new ArrayList<String>();
-	if (null != cursor) {
-		if (cursor.moveToFirst()) {
-			do {
-				strs.add(cursor.getString(0));
-			} while (cursor.moveToNext());
+				"SELECT " + FLD_SM_TEMPLATES + " FROM " + TABLE_VARIABLE, null);
+		
+		ArrayList<String> strs = new ArrayList<String>();
+		
+		if (null != cursor) {
+			if (cursor.moveToFirst()) {
+				do {
+					strs.add(cursor.getString(0));
+				} while (cursor.moveToNext());
+			}
 		} else {
-			Log.e(TAG_CURSOR_ERROR, "getTemplates cursor moveToNext");
+			Log.e(TAG_CURSOR_ERROR, "getTemplates null cursor");
 		}
-	}else {
-		Log.e(TAG_CURSOR_ERROR, "getTemplates null cursor");
-	}
 		return strs.toArray(new String[strs.size()]);
 	}
 	

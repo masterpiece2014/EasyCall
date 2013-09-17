@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.telephony.SmsManager;
+import android.util.Log;
 import android.widget.Toast;
 
 public class SMSender {
@@ -17,14 +18,16 @@ public class SMSender {
 	static {
 		smsManager_ = SmsManager.getDefault();	
 	}
-	private final String SM_SENT;
-	private final String SM_DELIVERED;
+	public final String SM_SENT;
+	public final String SM_DELIVERED;
 
-	private final Context context;
 	private final PendingIntent sendPIntent_;
 	private final PendingIntent deliveredPIntent_;
-	private BroadcastReceiver sendReceiver_;
-	private BroadcastReceiver deliveryReceiver_;
+	private final BroadcastReceiver sendReceiver_;
+	private final BroadcastReceiver deliveryReceiver_;
+	
+
+	private Context context;
 	
 	public SMSender(final Context obj) {
 		
@@ -103,9 +106,17 @@ public class SMSender {
 				Toast.LENGTH_LONG).show();
 	}
 	
-	protected void stop() {
-		context.unregisterReceiver(sendReceiver_);
-		context.unregisterReceiver(deliveryReceiver_);
+	public void stop() {
+		try {
+			context.unregisterReceiver(sendReceiver_);
+		} catch (Exception e) {
+			Log.e("sendReceiver_", e.toString());
+		}
+		try {
+			context.unregisterReceiver(deliveryReceiver_);
+		} catch (Exception e) {
+			Log.e("sendReceiver_", e.toString());
+		}
 	}
 
 }

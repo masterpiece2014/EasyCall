@@ -55,7 +55,7 @@
 		
     <AutoCompleteTextView
         android:id="@+id/txt_sms"
-        android:layout_width="200dp"
+        android:layout_width="230dp"
         android:layout_height="50dp"
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="45dp"

@@ -30,7 +30,8 @@ public class Act_Main extends Activity implements IConfigurable {
 	private TextView startCount;	// show start count
 
 	private MyGestureListener gestureListener;
-	int currentBackgroundID;
+	private int currentBackgroundID;
+	
 	String[] smTemplates;
 	
 	private DataManager dataManager;

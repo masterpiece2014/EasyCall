@@ -26,7 +26,7 @@ public class Act_Config extends Activity implements IConfigurable {
 	private Button setPhoneBtn;
 	private EditText phoneNumEditor;
 	
-	int currentBackgroundID;
+	private int currentBackgroundID;
 	String[] smTemplates;
 	
 	private MyGestureListener gestureListener;
