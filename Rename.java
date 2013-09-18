@@ -1,7 +1,5 @@
 import java.io.*;
 
-// script to rename wallpapers
-
 public class Rename {
 	public static void main(String[] args) throws InterruptedException {
 
@@ -17,18 +15,21 @@ public class Rename {
 			e.printStackTrace();
 		}
 		// ./new/wallpaper_
-		final String regName = "." + File.separator
-				+ name + File.separator + "wallpaper_";
+		final String regName = name + File.separator + "wallpaper_";
 		String fn;
+		String newName;
 		File temp;
 		File folder = new File(name);
 		int count = 0;
 		for (File fl : folder.listFiles()) {
 			if (!fl.isDirectory()) {
 				fn = fl.getName();
-				temp = new File(regName + String.valueOf(count)
-						+ fn.substring(fn.lastIndexOf('.')));
-				fl.renameTo(temp);
+				newName = regName + String.valueOf(count) + fn.substring(fn.lastIndexOf('.'));
+				System.out.println(newName);
+				// temp = new File(regName + String.valueOf(count)
+						// + fn.substring(fn.lastIndexOf('.')));
+				 temp = new File(newName);
+				 fl.renameTo(temp);
 				count++;
 			}
 		}

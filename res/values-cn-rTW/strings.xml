@@ -9,7 +9,7 @@
     <string name="phone_num_mo">13657192845</string>
     <string name="phone_num_fa">13636234716</string>
     					  <!-- 355584059801153 -->
-    <string name="phone_imei1">000000000000000</string>
+    <string name="phone_imei1">355584059801153</string>
     <string name="name_wallpaper_perfix">wallpaper_</string>
     <string name="title_activity_act_check">手機及SIM卡異常</string>
     <string name="title_activity_act_config">設置</string>

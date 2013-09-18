@@ -4,12 +4,12 @@
     <string name="app_author">作者：蔡博文</string>
     <string name="txt_app_version">软件版本：</string>
     <integer name="app_version">20130916</integer>
-    <integer name="wallpaper_num">100</integer>
+    <integer name="wallpaper_num">116</integer>
     <string name="phone_num_son">18392387786</string>
     <string name="phone_num_mo">13657192845</string>
     <string name="phone_num_fa">13636234716</string>
     					  <!-- 355584059801153 -->
-    <string name="phone_imei1">000000000000000</string>
+    <string name="phone_imei1">355584059801153</string>
     <string name="name_wallpaper_perfix">wallpaper_</string>
     <string name="title_activity_act_check">手机及SIM卡异常</string>
     <string name="title_activity_act_config">设置</string>
