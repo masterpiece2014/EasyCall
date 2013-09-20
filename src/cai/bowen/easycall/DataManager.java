@@ -25,7 +25,8 @@ public class DataManager extends SQLiteOpenHelper {
 	}
 	
 	private static DataManager class_handler = null;
-	public static void init(final Context ct) {
+	
+	synchronized public static void  init(final Context ct) {
 		if (null == class_handler) {
 			class_handler = new DataManager(ct);
 		}
@@ -53,7 +54,6 @@ public class DataManager extends SQLiteOpenHelper {
 	static final int DB_VERSION;
 				// Common attributes of two tables
     static final String FLD_ID;
-    
     //		// first table: store unique data
 	static final String TABLE_UNIQUE;
 	
@@ -70,7 +70,7 @@ public class DataManager extends SQLiteOpenHelper {
     static final String TAG_DB_ERROR;
 	static {
 		DB_NAME = "EasyCall_database";
-		DB_VERSION = 20130916;
+		DB_VERSION = 20130920;
 		TABLE_UNIQUE = "Table_Unique";
 		FLD_ID = "_id";
 	    FLD_COUNT = "AppStartCount";
@@ -87,6 +87,7 @@ public class DataManager extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase database) {
+		
 	        database.execSQL(
 	        		"CREATE TABLE IF NOT EXISTS " + TABLE_UNIQUE 
 	        		+ " ( "
@@ -108,11 +109,10 @@ public class DataManager extends SQLiteOpenHelper {
 	        ContentValues cv = new ContentValues(); 
 	        cv.put(FLD_COUNT, 0);
 	        cv.put(FLD_THIS_PHONE_NUM, this.context.getString(R.string.phone_num_mo));
-	        cv.put(FLD_THIS_PHONE_IMEI, this.context.getString(R.string.phone_imei1));
+	        cv.put(FLD_THIS_PHONE_IMEI, this.context.getString(R.string.phone_imei));
 	        cv.put(FLD_TGT_PHONE_NUM, this.context.getString(R.string.phone_num_son));
 	        database.insert(TABLE_UNIQUE, null, cv);
 	        
-
 	        final String initDate = new Date().toString();
 	        final String[] smTemps = context.getResources().getStringArray(
 	        									R.array.txt_sm_templates);
@@ -165,7 +165,7 @@ public class DataManager extends SQLiteOpenHelper {
 	void setThisPhoneNum(final String newPhoneNum) {
 		this.getWritableDatabase().execSQL(
 				"UPDATE " + TABLE_UNIQUE 
-					+ " SET " + FLD_THIS_PHONE_NUM + " = " + newPhoneNum 
+					+ " SET " + FLD_THIS_PHONE_NUM + " = '" + newPhoneNum + "' "
 					+ " where " +  FLD_ID + " = 1");
 	}
 	
@@ -183,19 +183,18 @@ public class DataManager extends SQLiteOpenHelper {
 		return cursor.getString(0);
 	}
 
-	
 	void setTgtPhoneNumber(final String num) {
 		this.getWritableDatabase().execSQL(
 				"UPDATE " + TABLE_UNIQUE
-					+ " SET " + FLD_TGT_PHONE_NUM + " = " + num 
+					+ " SET " + FLD_TGT_PHONE_NUM + " = '" + num + "' "
 					+ " where " +  FLD_ID + " = 1");
 	}
 	
-	final String getTgtPhoneNumber() {		
+	final String getTgtPhoneNumber() {
 		Cursor cursor = this.getReadableDatabase().rawQuery(
-				"SELECT " + FLD_THIS_PHONE_NUM 
+				"SELECT " + FLD_TGT_PHONE_NUM 
 						+ " FROM " + TABLE_UNIQUE 
-							+ " WHERE " + FLD_ID + " =  1", null);
+							+ " WHERE " + FLD_ID + " = 1", null);
 
 		if (!cursor.moveToFirst()) {
 			Log.e(TAG_CURSOR_ERROR, "getTgtPhoneNumber moveToFirst");
@@ -236,6 +235,12 @@ public class DataManager extends SQLiteOpenHelper {
 				+ " WHERE " + FLD_SM_TEMPLATES + " = '" + oldStr + "' ");
 	}
 	
+	void restore() {
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.execSQL(" DROP TABLE IF EXISTS " + TABLE_UNIQUE);
+		db.execSQL(" DROP TABLE IF EXISTS " + TABLE_VARIABLE);
+		this.onCreate(db);
+	}
 }
 
 

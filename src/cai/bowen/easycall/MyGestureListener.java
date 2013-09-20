@@ -57,7 +57,7 @@ public class MyGestureListener extends SimpleOnGestureListener implements OnTouc
 		
 		float delta_X = me1.getX() - me2.getX();
 		delta_X = delta_X > 0 ? delta_X : - delta_X;
-		if (delta_X > 200F) {
+		if (delta_X > 180F) {
 			
 			((IConfigurable)activity).switchBackground();
 	    	

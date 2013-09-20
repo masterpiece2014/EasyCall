@@ -19,11 +19,8 @@ public class Act_Check extends Activity {
 	static final String ATT_PROBLEM;
 	static final String ATT_THIS_PHONE_NUM;
 	static {
-//		RET_AC = 1;
-//		RET_REJ = 0;
-//		RET_CODE = "returnFromAct_Check";
 		ATT_PROBLEM = "Problem";
-		ATT_THIS_PHONE_NUM = "Phone Number Hash";
+		ATT_THIS_PHONE_NUM = "Phone_Number";
 	}
 	private Button enterBtn;
 	private Button exitBtn;
@@ -48,9 +45,6 @@ public class Act_Check extends Activity {
 		exitBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-//				Intent intent = new Intent();
-//				intent.putExtra(RET_CODE, RET_REJ);
-//				Act_Check.this.setResult(RESULT_CANCELED, intent);
 				Act_Check.this.setResult(RESULT_CANCELED);
 				Act_Check.this.finish();
 			}
@@ -58,7 +52,7 @@ public class Act_Check extends Activity {
 		
 		problem = Integer.valueOf(getIntent().getStringExtra(ATT_PROBLEM));
 		newPhoneNum = getIntent().getStringExtra(ATT_THIS_PHONE_NUM);
-
+		
 		// wrong IMEI, just quit
 		if (-1 == problem) {
 			new AlertDialog.Builder(this)
@@ -66,7 +60,6 @@ public class Act_Check extends Activity {
 		    .setNegativeButton(getString(R.string.txt_exit), 
 		    						new DialogInterface.OnClickListener() {
 		        public void onClick(DialogInterface dialog, int which) {
-//					Act_Check.this.setResult(Act_Check.RET_REJ);
 		        	Act_Check.this.setResult(RESULT_CANCELED);
 					Act_Check.this.finish();
 		        }
@@ -78,13 +71,13 @@ public class Act_Check extends Activity {
 				public void onClick(View v) {
 					if (isValidKey(editText.getText().toString())) {
 
-						DataManager.getInstance().setThisPhoneNum(Act_Check.this.newPhoneNum);
+						DataManager.getInstance().setThisPhoneNum(
+								Act_Check.this.newPhoneNum);
 						
 						Toast.makeText(Act_Check.this, 
 								Act_Check.this.getString(R.string.txt_activated),
 								Toast.LENGTH_LONG).show();
 
-//						Act_Check.this.setResult(Act_Check.RET_AC);
 						Act_Check.this.setResult(RESULT_OK);
 						Act_Check.this.finish();
 					} else {
@@ -93,7 +86,6 @@ public class Act_Check extends Activity {
 					    .setNegativeButton(getString(R.string.txt_exit), 
 					    						new DialogInterface.OnClickListener() {
 					        public void onClick(DialogInterface dialog, int which) {
-//								Act_Check.this.setResult(Act_Check.RET_REJ);
 					        	Act_Check.this.setResult(RESULT_CANCELED);
 								Act_Check.this.finish();
 					        }

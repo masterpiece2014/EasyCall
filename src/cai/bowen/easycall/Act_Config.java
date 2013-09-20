@@ -22,6 +22,7 @@ public class Act_Config extends Activity implements IConfigurable {
 	private String strToDel;
 	private Spinner delSmTempSpn;
 	private Button delSmTempBtn;
+	private Button restoreBtn;
 	
 	private Button setPhoneBtn;
 	private EditText phoneNumEditor;
@@ -49,8 +50,9 @@ public class Act_Config extends Activity implements IConfigurable {
 		phoneNumEditor = (EditText)findViewById(R.id.txt_new_phone_num);
 		phoneNumEditor.setHint(dataManager.getTgtPhoneNumber());
 		setPhoneBtn = (Button)findViewById(R.id.btn_set_phone);
+		setPhoneBtn.setHint(dataManager.getTgtPhoneNumber());
+		restoreBtn = (Button)findViewById(R.id.btn_restore);
 		
-
 		findViewById(id.content).setOnTouchListener(gestureListener);
 		findViewById(id.content).setBackgroundResource(currentBackgroundID);
 		
@@ -82,7 +84,6 @@ public class Act_Config extends Activity implements IConfigurable {
 		delSmTempBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				
 				dataManager.deleteTemplate(strToDel);				
 				Act_Config.this.updateSpinner();				
 				Toast.makeText(Act_Config.this, 
@@ -111,6 +112,31 @@ public class Act_Config extends Activity implements IConfigurable {
 				     .show();
 				}
 				smTempEditor.setText("");
+			}
+		});
+		
+		restoreBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				new AlertDialog.Builder(Act_Config.this)
+			    .setMessage(getString(R.string.txt_restore_ask))
+			    .setPositiveButton(getString(R.string.txt_is_ok), 
+			    		new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Act_Config.this.dataManager.restore();
+						Act_Config.this.updateSpinner();
+						Toast.makeText(Act_Config.this, 
+								Act_Config.this.getString(R.string.txt_finished),
+								Toast.LENGTH_LONG).show();
+					}
+				})
+			    .setNegativeButton(getString(R.string.txt_cancel), 
+			    						new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int which) { 
+			        }
+			     })
+			     .show();
 			}
 		});
 	} // onCreat

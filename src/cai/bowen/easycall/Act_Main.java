@@ -40,25 +40,26 @@ public class Act_Main extends Activity implements IConfigurable {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ly_main);
 		
-		smSender = new SMSender(this);
-//		detector.setIsLongpressEnabled(true);
-		
 		DataManager.init(this);		// get context
 		DataManager.getInstance().count(1);
 		dataManager = DataManager.getInstance();
+		smSender = new SMSender(this);
+		
 		currentBackgroundID = R.drawable.wallpaper_0;
 		smTemplates = null;
 		gestureListener = new MyGestureListener(this);
 		setupUi();
 		checkThisPhone();// check imei and this phone number
 		
-		((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(1000); // OK, start!
+		((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(600); // OK, start!
 //////////////////////////////////////////////////////////////////////////////				
 		selectSpn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
-				Act_Main.this.contentEditor.setText(Act_Main.this.smTemplates[position]);
+				final String text = Act_Main.this.smTemplates[position];
+				Act_Main.this.contentEditor.setText(text);
+				Act_Main.this.contentEditor.setSelection(text.length());
 			}
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {}
@@ -143,7 +144,9 @@ public class Act_Main extends Activity implements IConfigurable {
 	public void updateSpinner() {
 		this.smTemplates = dataManager.getTemplates();
 		if (null == smTemplates && 0 == smTemplates.length) {
-			contentEditor.setText(getString(R.string.txt_sm_temp_null));
+			final String msgNullStr = getString(R.string.txt_sm_temp_null);
+			contentEditor.setText(msgNullStr);
+			contentEditor.setSelection(msgNullStr.length());
 			smTemplates = new String[]{getString(R.string.txt_sm_temp_null)};
 		}
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
@@ -154,16 +157,18 @@ public class Act_Main extends Activity implements IConfigurable {
 	}
 
 	void checkThisPhone() {
-		TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+		TelephonyManager tm = 
+				(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+		
 		String imei = tm.getDeviceId();
-		String phoneNum = tm.getLine1Number();
-
+		String simPhoneNum = tm.getLine1Number();
 		int problem = 0;
 
 		if (imei.hashCode() != dataManager.getThisIMEIHash()) {
-			// imei error, will exit
 			problem = -1;
-		} else if ( !phoneNum.equals(dataManager.getThisPhoneNum())) {
+			// wrong imei , exit
+		} else if (null == simPhoneNum || 
+					!simPhoneNum.equals(dataManager.getThisPhoneNum())) {
 			// this phone number changed, require reactivate
 			problem = 1;
 		}
@@ -172,7 +177,7 @@ public class Act_Main extends Activity implements IConfigurable {
 			Intent intent = new Intent(Act_Main.this, Act_Check.class);
 
 			intent.putExtra(Act_Check.ATT_PROBLEM, String.valueOf(problem));
-			intent.putExtra(Act_Check.ATT_THIS_PHONE_NUM, phoneNum);
+			intent.putExtra(Act_Check.ATT_THIS_PHONE_NUM, simPhoneNum);
 
 			this.startActivityForResult(intent, ACT_CODE_CHECK);
 		}
