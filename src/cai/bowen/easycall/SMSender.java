@@ -52,7 +52,7 @@ public class SMSender {
 					break;
 				case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
 					Toast.makeText(context, 
-							context.getString(R.string.txt_general_failure),
+							context.getString(R.string.txt_unknown_error),
 							Toast.LENGTH_SHORT).show();
 					break;
 				case SmsManager.RESULT_ERROR_NO_SERVICE:
@@ -82,7 +82,7 @@ public class SMSender {
 					break;
 				case Activity.RESULT_CANCELED:
 					Toast.makeText(context,
-							context.getString(R.string.txt_general_failure),
+							context.getString(R.string.txt_unknown_error),
 							Toast.LENGTH_SHORT).show();
 					break;
 				}
@@ -95,15 +95,24 @@ public class SMSender {
 	}
 
 	public void sendSMessage(final String phoneNumber, final String message) {
-		
-		List<String>   contentList = smsManager_.divideMessage(message);
-		for (String str : contentList) {
-			SMSender.smsManager_.sendTextMessage(phoneNumber, null, str,
-				sendPIntent_, deliveredPIntent_);
+		if (null == message) {
+			return;
 		}
-		Toast.makeText(context, 
-				context.getString(R.string.txt_sms_sent), 
-				Toast.LENGTH_LONG).show();
+		List<String> contentList = smsManager_.divideMessage(message);
+		try {
+			for (String str : contentList) {
+				SMSender.smsManager_.sendTextMessage(phoneNumber, null, str,
+					sendPIntent_, deliveredPIntent_);
+			}
+			Toast.makeText(context, 
+					context.getString(R.string.txt_sms_sent), 
+					Toast.LENGTH_LONG).show();
+		} catch (IllegalArgumentException e) {
+			Toast.makeText(context,
+					context.getString(R.string.txt_unknown_error), 
+					Toast.LENGTH_LONG).show();
+			Log.e("SmsManager", "empty address");
+		}
 	}
 	
 	public void stop() {
