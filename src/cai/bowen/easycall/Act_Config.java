@@ -1,5 +1,7 @@
 package cai.bowen.easycall;
 
+import java.util.Random;
+
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +18,8 @@ import android.content.DialogInterface;
 
 public class Act_Config extends Activity implements IConfigurable {
 
+
+	private int WALLPARER_NUM;
 	private EditText smTempEditor;
 	private Button addSmTempBtn;
 
@@ -27,7 +31,7 @@ public class Act_Config extends Activity implements IConfigurable {
 	private Button setPhoneBtn;
 	private EditText phoneNumEditor;
 	
-	private int currentBackgroundID;
+	private int currentBgIndex;
 	String[] smTemplates;
 	
 	private MyGestureListener gestureListener;
@@ -38,9 +42,17 @@ public class Act_Config extends Activity implements IConfigurable {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ly_config);
 		
+
+		WALLPARER_NUM = getResources().getInteger(R.integer.wallpaper_num);
 		dataManager = DataManager.getInstance();
-		int currentBackgroundID = dataManager.getRandomBackgroundID();
+		
+	   	currentBgIndex = new Random().nextInt(WALLPARER_NUM);
+	   	
+    	this.findViewById(android.R.id.content).setBackgroundResource(
+    			dataManager.getPictureId(currentBgIndex));
+
 		gestureListener = new MyGestureListener(this);
+		findViewById(id.content).setOnTouchListener(gestureListener);
 		
 		smTempEditor = (EditText)findViewById(R.id.txt_new_sm_temp);
 		addSmTempBtn = (Button)findViewById(R.id.btn_new_sm_temp);
@@ -52,9 +64,6 @@ public class Act_Config extends Activity implements IConfigurable {
 		setPhoneBtn = (Button)findViewById(R.id.btn_set_phone);
 		setPhoneBtn.setHint(dataManager.getTgtPhoneNumber());
 		restoreBtn = (Button)findViewById(R.id.btn_restore);
-		
-		findViewById(id.content).setOnTouchListener(gestureListener);
-		findViewById(id.content).setBackgroundResource(currentBackgroundID);
 		
 		updateSpinner();
 ///////////////////////////////////////////////////////////
@@ -147,15 +156,28 @@ public class Act_Config extends Activity implements IConfigurable {
     }
 
     @Override
-    public int getCurrentBackgroundID() {
-		return currentBackgroundID;
+    public int getCurrentBgIndex() {
+		return currentBgIndex;
 	}
-    @Override
-    public void switchBackground() {
-    	this.currentBackgroundID = dataManager.getRandomBackgroundID();
-    	this.findViewById(android.R.id.content)
-    			.setBackgroundResource(currentBackgroundID);
+
+	@Override
+	public void switchToNextBg() {
+		currentBgIndex++;
+		currentBgIndex %= (WALLPARER_NUM);
+		this.findViewById(android.R.id.content).setBackgroundResource(
+				dataManager.getPictureId(currentBgIndex));
 	}
+
+	@Override
+	public void switchToPrevBg() {
+		currentBgIndex--;
+		if (0 > currentBgIndex) {
+			currentBgIndex = WALLPARER_NUM;
+		}
+		this.findViewById(android.R.id.content).setBackgroundResource(
+				dataManager.getPictureId(currentBgIndex));
+	}
+    
 	@Override
 	public void updateSpinner() {
 		this.smTemplates = dataManager.getTemplates();

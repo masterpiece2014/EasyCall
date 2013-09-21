@@ -69,14 +69,16 @@ public class Act_Check extends Activity {
 			enterBtn.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					if (isValidKey(editText.getText().toString())) {
+					final String code = editText.getText().toString();
+					if (5 < code.length() 
+							&& isValidKey(editText.getText().toString())) {
 
 						DataManager.getInstance().setThisPhoneNum(
 								Act_Check.this.newPhoneNum);
 						
 						Toast.makeText(Act_Check.this, 
 								Act_Check.this.getString(R.string.txt_activated),
-								Toast.LENGTH_LONG).show();
+								Toast.LENGTH_SHORT).show();
 
 						Act_Check.this.setResult(RESULT_OK);
 						Act_Check.this.finish();

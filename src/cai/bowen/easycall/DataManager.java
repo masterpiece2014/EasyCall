@@ -3,8 +3,6 @@ package cai.bowen.easycall;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Random;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -14,14 +12,14 @@ import android.util.Log;
 
 public class DataManager extends SQLiteOpenHelper {
 	
-	private final int WALLPARER_NUM;
-	
+
+	private final String WALLPAPER_PERFIX;
 	private Context context = null;
 	
 	private DataManager(Context context) {
 		super(context, DB_NAME, null, DB_VERSION);
 		this.context = context;
-		WALLPARER_NUM = context.getResources().getInteger(R.integer.wallpaper_num);
+		WALLPAPER_PERFIX = context.getResources().getString(R.string.wallpaper_perfix);
 	}
 	
 	private static DataManager class_handler = null;
@@ -38,14 +36,14 @@ public class DataManager extends SQLiteOpenHelper {
 		return class_handler;
 	}
 	
-	int getRandomBackgroundID() {
-		String wallpCode = new String(context.getString(R.string.name_wallpaper_perfix));
-		wallpCode += String.valueOf(new Random().nextInt(WALLPARER_NUM));
+	synchronized int getPictureId(int index) {
+System.out.println(">>> " + index);
 		try {
-			Field wallpField = R.drawable.class.getField(wallpCode);
-			return wallpField.getInt(wallpField);
+			final String resourceName = WALLPAPER_PERFIX + String.valueOf(index);
+			Field wallpaperId = R.drawable.class.getField(resourceName);
+			return wallpaperId.getInt(wallpaperId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(TAG_OTHER,e.toString());
 			return R.drawable.wallpaper_0;
 		}
 	}
@@ -68,6 +66,8 @@ public class DataManager extends SQLiteOpenHelper {
     
     static final String TAG_CURSOR_ERROR;
     static final String TAG_DB_ERROR;
+	static final String TAG_OTHER;
+	
 	static {
 		DB_NAME = "EasyCall_database";
 		DB_VERSION = 20130920;
@@ -83,6 +83,7 @@ public class DataManager extends SQLiteOpenHelper {
 	    FLD_MODIFIED_DATE = "ModifiedDate";
 	    TAG_CURSOR_ERROR = "Cursor error";
 	    TAG_DB_ERROR = "Database error";
+	    TAG_OTHER = "Other error";
 	}
 
 	@Override

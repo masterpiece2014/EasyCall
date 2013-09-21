@@ -41,7 +41,7 @@ public class MyGestureListener extends SimpleOnGestureListener implements OnTouc
 							WallpaperManager
 							.getInstance(activity)
 								.setResource(
-										((IConfigurable)activity).getCurrentBackgroundID());
+										((IConfigurable)activity).getCurrentBgIndex());
 						} catch (IOException e) {
 							Log.e("onLongPress WallpaperManager", e.toString());
 						}
@@ -55,12 +55,12 @@ public class MyGestureListener extends SimpleOnGestureListener implements OnTouc
 	@Override
 	public boolean onFling(MotionEvent me1, MotionEvent me2, float vX, float vY) {
 		
-		float delta_X = me1.getX() - me2.getX();
-		delta_X = delta_X > 0 ? delta_X : - delta_X;
-		if (delta_X > 180F) {
-			
-			((IConfigurable)activity).switchBackground();
-	    	
+		float distance = me2.getX() - me1.getX();
+		if (distance > 100F) {
+			((IConfigurable)activity).switchToNextBg();
+		} else if (distance < -100F) {
+			((IConfigurable)activity).switchToPrevBg();
+		}
 //			int currentBackground = mainAct.getCurrentBackgroundID();
 //			int nextBackground = DataManager.getInstance().getRandomBackgroundID();
 //			android.animation.ValueAnimator backgroundanim = 
@@ -89,7 +89,6 @@ public class MyGestureListener extends SimpleOnGestureListener implements OnTouc
 //
 //			});
 //			colorAnimation.start();
-		}
 		return false;
 	}
     
