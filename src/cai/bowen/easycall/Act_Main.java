@@ -24,7 +24,7 @@ public class Act_Main extends Activity implements IConfigurable {
 	public static final int ACT_CODE_CHECK = 1;
 
 	private int WALLPARER_NUM;
-	
+	private boolean appEnabled;
 	private SMSender smSender;
 ///////////////////////////////////////
 	private Spinner selectSpn;
@@ -51,11 +51,11 @@ public class Act_Main extends Activity implements IConfigurable {
 		DataManager.init(this);		// get context
 		DataManager.getInstance().count(1);
 		dataManager = DataManager.getInstance();
-		smSender = new SMSender(this);
-		gestureListener = new MyGestureListener(this);
-		
-		setupUi();
+
 		checkThisPhone();// check imei and this phone number
+		
+		
+		setUpCpmponents();
 		
 		((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(600); // OK, start!
 //////////////////////////////////////////////////////////////////////////////				
@@ -99,7 +99,7 @@ public class Act_Main extends Activity implements IConfigurable {
 		});
     }// OnCreat
 
-    @Override
+	@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) { 
     	switch (requestCode) {
 		case ACT_CODE_CHECK: // return from phone check
@@ -120,12 +120,11 @@ public class Act_Main extends Activity implements IConfigurable {
 		return gestureListener.getDetector().onTouchEvent(event); 
     }
 	
-    void setupUi() {
+    void setUpCpmponents() {
     	currentBgIndex = new Random().nextInt(WALLPARER_NUM);
     	this.findViewById(android.R.id.content).setBackgroundResource(
     			dataManager.getPictureId(currentBgIndex));
 
-    	findViewById(android.R.id.content).setOnTouchListener(gestureListener);
 //		callBtn.setAlpha(0.75F);
 		this.selectSpn = (Spinner)findViewById(R.id.spn_select_sms);
 		this.sendBtn  =(Button)findViewById(R.id.btn_send_sms);		
@@ -136,23 +135,39 @@ public class Act_Main extends Activity implements IConfigurable {
 					dataManager.getCount()
 						));
 		this.contentEditor  =(EditText)findViewById(R.id.txt_sms);
-		this.updateSpinner();
+		gestureListener = new MyGestureListener(this);
+    	findViewById(android.R.id.content).setOnTouchListener(gestureListener);
+    	
+    	if (appEnabled) {
+    		smSender = new SMSender(this);
+    		this.updateSpinner();
+    	} else {
+			this.selectSpn.setEnabled(false);
+			this.callBtn.setEnabled(false);
+			this.sendBtn.setEnabled(false);
+			this.contentEditor.setText(getString(R.string.txt_no_service));
+			this.contentEditor.setEnabled(false);
+		}
     }
     @Override
     public int getCurrentBgIndex() {
 		return currentBgIndex;
 	}
 	@Override
-	public void switchToNextBg() {
-		currentBgIndex++;
+	public void switchToNext(int n) {
+		if (0 < n && n < WALLPARER_NUM) {
+			currentBgIndex += n;
+		}
 		currentBgIndex %= WALLPARER_NUM;
 		this.findViewById(android.R.id.content).setBackgroundResource(
 				dataManager.getPictureId(currentBgIndex));
 	}
 
 	@Override
-	public void switchToPrevBg() {
-		currentBgIndex--;
+	public void switchToPrev(int n) {
+		if (0 < n && n < WALLPARER_NUM) {
+			currentBgIndex -= n;
+		}
 		if (0 > currentBgIndex) {
 			currentBgIndex = WALLPARER_NUM - 1;
 		}
@@ -184,10 +199,12 @@ public class Act_Main extends Activity implements IConfigurable {
 		int problem = 0;
 
 		if (imei.hashCode() != dataManager.getThisIMEIHash()) {
-			problem = -1;
-			// wrong imei , exit
-		} else if (null == simPhoneNum || 
-					!simPhoneNum.equals(dataManager.getThisPhoneNum())) {
+			problem = -1;// wrong imei , exit
+			this.appEnabled = false;
+		} else if (null == simPhoneNum) {
+			problem = 1;
+			this.appEnabled = false;
+		} else if (!simPhoneNum.equals(dataManager.getThisPhoneNum())) {
 			// this phone number changed, require reactivate
 			problem = 1;
 		}
@@ -201,9 +218,12 @@ public class Act_Main extends Activity implements IConfigurable {
 			this.startActivityForResult(intent, ACT_CODE_CHECK);
 		}
 	}
+	
 	@Override
 	protected void onStop() {
-		smSender.stop();
+		if (appEnabled) {
+			smSender.stop();
+		}
 		super.onStop();
 	}
 }

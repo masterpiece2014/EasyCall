@@ -4,9 +4,9 @@
     <item>
         <shape>
             <stroke
-                android:color="#50dddddd"
+                android:color="#60EEEEEE"
                 android:width="3dp" />
-            <solid android:color="#a0dddddd" />
+            <solid android:color="#A2CCCCCC" />
         </shape>
     </item>
 </selector>

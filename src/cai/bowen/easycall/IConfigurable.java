@@ -4,9 +4,9 @@ public interface IConfigurable {
 	
 	public int getCurrentBgIndex();
 	
-	public void switchToNextBg();
+	public void switchToNext(int n);
 	
-	public void switchToPrevBg();
+	public void switchToPrev(int n);
 	
 	public void updateSpinner();
 	

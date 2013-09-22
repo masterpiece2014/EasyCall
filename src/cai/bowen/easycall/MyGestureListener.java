@@ -55,11 +55,17 @@ public class MyGestureListener extends SimpleOnGestureListener implements OnTouc
 	@Override
 	public boolean onFling(MotionEvent me1, MotionEvent me2, float vX, float vY) {
 		
-		float distance = me2.getX() - me1.getX();
-		if (distance > 100F) {
-			((IConfigurable)activity).switchToNextBg();
-		} else if (distance < -100F) {
-			((IConfigurable)activity).switchToPrevBg();
+		float dist_X = me2.getX() - me1.getX();
+		float dist_Y = me2.getY() - me1.getY();
+		if (dist_Y > 120F) {
+			((IConfigurable)activity).switchToNext(10);
+		} else if (dist_Y < -120F) {
+			((IConfigurable)activity).switchToPrev(10);
+		}
+		else if (dist_X > 100F) {
+			((IConfigurable)activity).switchToNext(1);
+		} else if (dist_X < -100F) {
+			((IConfigurable)activity).switchToPrev(1);
 		}
 //			int currentBackground = mainAct.getCurrentBackgroundID();
 //			int nextBackground = DataManager.getInstance().getRandomBackgroundID();

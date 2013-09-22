@@ -161,18 +161,22 @@ public class Act_Config extends Activity implements IConfigurable {
 	}
 
 	@Override
-	public void switchToNextBg() {
-		currentBgIndex++;
-		currentBgIndex %= (WALLPARER_NUM);
+	public void switchToNext(int n) {
+		if (0 < n && n < WALLPARER_NUM) {
+			currentBgIndex += n;
+		}
+		currentBgIndex %= WALLPARER_NUM;
 		this.findViewById(android.R.id.content).setBackgroundResource(
 				dataManager.getPictureId(currentBgIndex));
 	}
 
 	@Override
-	public void switchToPrevBg() {
-		currentBgIndex--;
+	public void switchToPrev(int n) {
+		if (0 < n && n < WALLPARER_NUM) {
+			currentBgIndex -= n;
+		}
 		if (0 > currentBgIndex) {
-			currentBgIndex = WALLPARER_NUM;
+			currentBgIndex = WALLPARER_NUM - 1;
 		}
 		this.findViewById(android.R.id.content).setBackgroundResource(
 				dataManager.getPictureId(currentBgIndex));

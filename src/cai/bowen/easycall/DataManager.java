@@ -12,7 +12,6 @@ import android.util.Log;
 
 public class DataManager extends SQLiteOpenHelper {
 	
-
 	private final String WALLPAPER_PERFIX;
 	private Context context = null;
 	
@@ -37,7 +36,6 @@ public class DataManager extends SQLiteOpenHelper {
 	}
 	
 	synchronized int getPictureId(int index) {
-System.out.println(">>> " + index);
 		try {
 			final String resourceName = WALLPAPER_PERFIX + String.valueOf(index);
 			Field wallpaperId = R.drawable.class.getField(resourceName);
@@ -131,7 +129,7 @@ System.out.println(">>> " + index);
 		db.execSQL(" DROP TABLE IF EXISTS " + TABLE_VARIABLE);
 		onCreate(db);
 	}
-	int getCount() {
+	synchronized int getCount() {
 		Cursor cursor = this.getReadableDatabase().rawQuery(
 				"SELECT " + FLD_COUNT + " FROM " + TABLE_UNIQUE + " WHERE "
 						+ FLD_ID + " = 1", null);
@@ -142,7 +140,7 @@ System.out.println(">>> " + index);
 		return cursor.getInt(0);// 0
 	}
 	
-	void count(int i) {
+	synchronized void count(int i) {
 		int current = getCount();
 		current += i;
 		this.getWritableDatabase().execSQL(
@@ -237,19 +235,32 @@ System.out.println(">>> " + index);
 	}
 	
 	void restore() {
+		
 		SQLiteDatabase db = this.getWritableDatabase();
-		db.execSQL(" DROP TABLE IF EXISTS " + TABLE_UNIQUE);
+		setThisPhoneNum(context.getString(R.string.phone_num_mo));
+		setTgtPhoneNumber(context.getString(R.string.phone_num_son));
+		
 		db.execSQL(" DROP TABLE IF EXISTS " + TABLE_VARIABLE);
-		this.onCreate(db);
+		db.execSQL(
+		"CREATE TABLE IF NOT EXISTS " + TABLE_VARIABLE 
+		+ "(" 
+			+ FLD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ FLD_SM_TEMPLATES 	+ " TEXT, "
+			+ FLD_MODIFIED_DATE 	+ " TEXT "
+		+ " )");
+		
+		
+		final String initDate = new Date().toString();
+		final String[] smTemps = context.getResources().getStringArray(
+											R.array.txt_sm_templates);
+		ContentValues cv = new ContentValues(); 
+		for(final String str : smTemps) {
+		    cv = new ContentValues(); 
+			cv.put(FLD_SM_TEMPLATES, str);
+		    cv.put(FLD_MODIFIED_DATE, initDate);
+		    db.insert(TABLE_VARIABLE, null, cv);
+		}
 	}
 }
-
-
-
-
-
-
-
-
 
 
