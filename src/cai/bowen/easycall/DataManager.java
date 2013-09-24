@@ -237,8 +237,6 @@ public class DataManager extends SQLiteOpenHelper {
 	void restore() {
 		
 		SQLiteDatabase db = this.getWritableDatabase();
-		setThisPhoneNum(context.getString(R.string.phone_num_mo));
-		setTgtPhoneNumber(context.getString(R.string.phone_num_son));
 		
 		db.execSQL(" DROP TABLE IF EXISTS " + TABLE_VARIABLE);
 		db.execSQL(
@@ -248,7 +246,6 @@ public class DataManager extends SQLiteOpenHelper {
 			+ FLD_SM_TEMPLATES 	+ " TEXT, "
 			+ FLD_MODIFIED_DATE 	+ " TEXT "
 		+ " )");
-		
 		
 		final String initDate = new Date().toString();
 		final String[] smTemps = context.getResources().getStringArray(

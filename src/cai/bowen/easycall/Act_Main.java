@@ -23,9 +23,13 @@ public class Act_Main extends Activity implements IConfigurable {
 	public static final int ACT_CODE_CONFIG = 0;
 	public static final int ACT_CODE_CHECK = 1;
 
-	private int WALLPARER_NUM;
 	private boolean appEnabled;
+	private int WALLPARER_NUM;
+	private DataManager dataManager;
+	String[] smTemplates;
 	private SMSender smSender;
+	private MyGestureListener gestureListener;
+	private int currentBgIndex;
 ///////////////////////////////////////
 	private Spinner selectSpn;
 	private Button sendBtn;
@@ -34,12 +38,6 @@ public class Act_Main extends Activity implements IConfigurable {
 	private EditText contentEditor; // edit sm
 	private TextView startCount;	// show start count
 
-	private MyGestureListener gestureListener;
-	private int currentBgIndex;
-	
-	String[] smTemplates;
-	
-	private DataManager dataManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,18 +45,81 @@ public class Act_Main extends Activity implements IConfigurable {
 		
 		smTemplates = null;
 		WALLPARER_NUM = getResources().getInteger(R.integer.wallpaper_num);
-		
+		appEnabled = true;
 		DataManager.init(this);		// get context
 		DataManager.getInstance().count(1);
+		
 		dataManager = DataManager.getInstance();
 
 		checkThisPhone();// check imei and this phone number
 		
-		
 		setUpCpmponents();
 		
 		((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(600); // OK, start!
-//////////////////////////////////////////////////////////////////////////////				
+    }// OnCreat
+
+	@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) { 
+    	switch (requestCode) {
+		case ACT_CODE_CHECK: // return from phone check
+			if (Activity.RESULT_CANCELED == resultCode) {
+				this.finish();
+			} else {
+				enableThisPhone();
+			}
+			break;
+		case ACT_CODE_CONFIG: // from configuration activity
+				this.updateSpinner();
+				break;
+		default:
+			break;
+		}
+    }
+
+	@Override
+    public boolean onTouchEvent(MotionEvent event) {
+		return gestureListener.getDetector().onTouchEvent(event); 
+    }
+	
+    void setUpCpmponents() {
+    	
+    	currentBgIndex = new Random().nextInt(WALLPARER_NUM);
+    	this.findViewById(android.R.id.content).setBackgroundResource(
+    			dataManager.getPictureId(currentBgIndex));
+
+//		callBtn.setAlpha(0.75F);
+		this.selectSpn = (Spinner)findViewById(R.id.spn_select_sms);
+		this.sendBtn  =(Button)findViewById(R.id.btn_send_sms);		
+		this.callBtn  =(Button)findViewById(R.id.btn_call);
+		this.cfgBtn = (Button)findViewById(R.id.btn_config);
+		this.startCount = (TextView)findViewById(R.id.txt_start_count);
+			startCount.setText(String.valueOf(
+					dataManager.getCount()
+						));
+			
+		this.contentEditor  =(EditText)findViewById(R.id.txt_sms);
+		gestureListener = new MyGestureListener(this);
+    	findViewById(android.R.id.content).setOnTouchListener(gestureListener);
+    	
+    	if (appEnabled) {
+    		enableThisPhone();
+    	} else {
+			this.selectSpn.setEnabled(false);
+			this.callBtn.setEnabled(false);
+			this.sendBtn.setEnabled(false);
+			this.contentEditor.setText(getString(R.string.txt_no_service));
+		}
+		cfgBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(Act_Main.this, Act_Config.class);
+				Act_Main.this.startActivityForResult(intent, ACT_CODE_CONFIG);
+			}
+		});
+    }
+    private void enableThisPhone() {
+		smSender = new SMSender(this);
+		this.updateSpinner();
 		selectSpn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
@@ -90,65 +151,11 @@ public class Act_Main extends Activity implements IConfigurable {
 				Act_Main.this.startActivity(intent);
 			}
 		});
-		cfgBtn.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(Act_Main.this, Act_Config.class);
-				Act_Main.this.startActivityForResult(intent, ACT_CODE_CONFIG);
-			}
-		});
-    }// OnCreat
-
-	@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) { 
-    	switch (requestCode) {
-		case ACT_CODE_CHECK: // return from phone check
-			if (Activity.RESULT_CANCELED == resultCode) {
-				this.finish();
-			}
-			break;
-		case ACT_CODE_CONFIG: // from configuration activity
-				this.updateSpinner();
-				break;
-		default:
-			break;
-		}
+		this.selectSpn.setEnabled(true);
+		this.callBtn.setEnabled(true);
+		this.sendBtn.setEnabled(true);
     }
-
-	@Override
-    public boolean onTouchEvent(MotionEvent event) {
-		return gestureListener.getDetector().onTouchEvent(event); 
-    }
-	
-    void setUpCpmponents() {
-    	currentBgIndex = new Random().nextInt(WALLPARER_NUM);
-    	this.findViewById(android.R.id.content).setBackgroundResource(
-    			dataManager.getPictureId(currentBgIndex));
-
-//		callBtn.setAlpha(0.75F);
-		this.selectSpn = (Spinner)findViewById(R.id.spn_select_sms);
-		this.sendBtn  =(Button)findViewById(R.id.btn_send_sms);		
-		this.callBtn  =(Button)findViewById(R.id.btn_call);
-		this.cfgBtn = (Button)findViewById(R.id.btn_config);
-		this.startCount = (TextView)findViewById(R.id.txt_start_count);
-			startCount.setText(String.valueOf(
-					dataManager.getCount()
-						));
-		this.contentEditor  =(EditText)findViewById(R.id.txt_sms);
-		gestureListener = new MyGestureListener(this);
-    	findViewById(android.R.id.content).setOnTouchListener(gestureListener);
-    	
-    	if (appEnabled) {
-    		smSender = new SMSender(this);
-    		this.updateSpinner();
-    	} else {
-			this.selectSpn.setEnabled(false);
-			this.callBtn.setEnabled(false);
-			this.sendBtn.setEnabled(false);
-			this.contentEditor.setText(getString(R.string.txt_no_service));
-			this.contentEditor.setEnabled(false);
-		}
-    }
+    
     @Override
     public int getCurrentBgIndex() {
 		return currentBgIndex;
@@ -197,7 +204,6 @@ public class Act_Main extends Activity implements IConfigurable {
 		String imei = tm.getDeviceId();
 		String simPhoneNum = tm.getLine1Number();
 		int problem = 0;
-
 		if (imei.hashCode() != dataManager.getThisIMEIHash()) {
 			problem = -1;// wrong imei , exit
 			this.appEnabled = false;
@@ -206,6 +212,7 @@ public class Act_Main extends Activity implements IConfigurable {
 			this.appEnabled = false;
 		} else if (!simPhoneNum.equals(dataManager.getThisPhoneNum())) {
 			// this phone number changed, require reactivate
+			this.appEnabled = false;
 			problem = 1;
 		}
 		
