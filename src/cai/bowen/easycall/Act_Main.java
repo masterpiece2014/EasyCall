@@ -35,7 +35,7 @@ public class Act_Main extends Activity implements IConfigurable {
 	private Button sendBtn;
 	private Button callBtn;
 	private Button cfgBtn;
-	private EditText contentEditor; // edit sm
+	private EditText smEditor; // edit sm
 	private TextView startCount;	// show start count
 
     @Override
@@ -43,19 +43,21 @@ public class Act_Main extends Activity implements IConfigurable {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ly_main);
 		
-		smTemplates = null;
+        appEnabled = true;
 		WALLPARER_NUM = getResources().getInteger(R.integer.wallpaper_num);
-		appEnabled = true;
 		DataManager.init(this);		// get context
-		DataManager.getInstance().count(1);
-		
 		dataManager = DataManager.getInstance();
-
+		dataManager.count(1);
+		smTemplates = null;
+    	smSender = null;
+    	gestureListener = null;
+    	currentBgIndex = R.drawable.wallpaper_0;
+		
 		checkThisPhone();// check imei and this phone number
 		
 		setUpCpmponents();
 		
-		((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(600); // OK, start!
+		((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(300); // OK, start!
     }// OnCreat
 
 	@Override
@@ -64,7 +66,7 @@ public class Act_Main extends Activity implements IConfigurable {
 		case ACT_CODE_CHECK: // return from phone check
 			if (Activity.RESULT_CANCELED == resultCode) {
 				this.finish();
-			} else {
+			} else if (Activity.RESULT_OK == resultCode){
 				enableThisPhone();
 			}
 			break;
@@ -87,28 +89,20 @@ public class Act_Main extends Activity implements IConfigurable {
     	this.findViewById(android.R.id.content).setBackgroundResource(
     			dataManager.getPictureId(currentBgIndex));
 
+		gestureListener = new MyGestureListener(this);
+    	findViewById(android.R.id.content).setOnTouchListener(gestureListener);
+    	
 //		callBtn.setAlpha(0.75F);
 		this.selectSpn = (Spinner)findViewById(R.id.spn_select_sms);
 		this.sendBtn  =(Button)findViewById(R.id.btn_send_sms);		
 		this.callBtn  =(Button)findViewById(R.id.btn_call);
-		this.cfgBtn = (Button)findViewById(R.id.btn_config);
 		this.startCount = (TextView)findViewById(R.id.txt_start_count);
 			startCount.setText(String.valueOf(
 					dataManager.getCount()
 						));
-			
-		this.contentEditor  =(EditText)findViewById(R.id.txt_sms);
-		gestureListener = new MyGestureListener(this);
-    	findViewById(android.R.id.content).setOnTouchListener(gestureListener);
-    	
-    	if (appEnabled) {
-    		enableThisPhone();
-    	} else {
-			this.selectSpn.setEnabled(false);
-			this.callBtn.setEnabled(false);
-			this.sendBtn.setEnabled(false);
-			this.contentEditor.setText(getString(R.string.txt_no_service));
-		}
+		this.smEditor  =(EditText)findViewById(R.id.txt_sms);
+
+		cfgBtn = (Button)findViewById(R.id.btn_config);
 		cfgBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -116,8 +110,25 @@ public class Act_Main extends Activity implements IConfigurable {
 				Act_Main.this.startActivityForResult(intent, ACT_CODE_CONFIG);
 			}
 		});
+		
+    	if (appEnabled) {
+    		enableThisPhone();
+    	} else {
+			this.selectSpn.setEnabled(false);
+			this.callBtn.setEnabled(false);
+			this.sendBtn.setEnabled(false);
+			this.smEditor.setText(getString(R.string.txt_no_service));
+			this.smEditor.setEnabled(false);
+		}
     }
     private void enableThisPhone() {
+    	
+		this.selectSpn.setEnabled(true);
+		this.callBtn.setEnabled(true);
+		this.sendBtn.setEnabled(true);
+		this.smEditor.setEnabled(true);
+		smEditor.setHint(getString(R.string.txt_sms_hint));
+    	
 		smSender = new SMSender(this);
 		this.updateSpinner();
 		selectSpn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
@@ -125,8 +136,8 @@ public class Act_Main extends Activity implements IConfigurable {
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
 				final String text = Act_Main.this.smTemplates[position];
-				Act_Main.this.contentEditor.setText(text);
-				Act_Main.this.contentEditor.setSelection(text.length());
+				Act_Main.this.smEditor.setText(text);
+				Act_Main.this.smEditor.setSelection(text.length());
 			}
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {}
@@ -135,9 +146,9 @@ public class Act_Main extends Activity implements IConfigurable {
 			@Override
 			public void onClick(View v) {
 				final String address = dataManager.getTgtPhoneNumber();
-				final String content = Act_Main.this.contentEditor.getText().toString();
+				final String content = Act_Main.this.smEditor.getText().toString();
 				if (content.length() > 0) {
-					Act_Main.this.contentEditor.setText(getResources().getString(R.string.txt_sms_hint));
+					Act_Main.this.smEditor.setText(getResources().getString(R.string.txt_sms_hint));
 					Act_Main.this.smSender.sendSMessage(address, content);
 				}
 			}
@@ -151,11 +162,24 @@ public class Act_Main extends Activity implements IConfigurable {
 				Act_Main.this.startActivity(intent);
 			}
 		});
-		this.selectSpn.setEnabled(true);
-		this.callBtn.setEnabled(true);
-		this.sendBtn.setEnabled(true);
     }
     
+	@Override
+	public void updateSpinner() {
+		this.smTemplates = dataManager.getTemplates();
+		if (null == smTemplates && 0 == smTemplates.length) {
+			final String msgNullStr = getString(R.string.txt_sm_temp_null);
+			smEditor.setText(msgNullStr);
+			smEditor.setSelection(msgNullStr.length());
+			smTemplates = new String[]{getString(R.string.txt_sm_temp_null)};
+		}
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+								android.R.layout.simple_spinner_item,
+								smTemplates);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		selectSpn.setAdapter(adapter);
+	}
+	
     @Override
     public int getCurrentBgIndex() {
 		return currentBgIndex;
@@ -181,40 +205,31 @@ public class Act_Main extends Activity implements IConfigurable {
 		this.findViewById(android.R.id.content).setBackgroundResource(
 				dataManager.getPictureId(currentBgIndex));
 	}
-	@Override
-	public void updateSpinner() {
-		this.smTemplates = dataManager.getTemplates();
-		if (null == smTemplates && 0 == smTemplates.length) {
-			final String msgNullStr = getString(R.string.txt_sm_temp_null);
-			contentEditor.setText(msgNullStr);
-			contentEditor.setSelection(msgNullStr.length());
-			smTemplates = new String[]{getString(R.string.txt_sm_temp_null)};
-		}
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-								android.R.layout.simple_spinner_item,
-								smTemplates);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		selectSpn.setAdapter(adapter);
-	}
 
+	public static final int PHONE_OK = 0;
+	public static final int WRONG_IMEI = 1;
+	public static final int WRONG_NUMBER = 2;
+	public static final int NO_SIM_CARD = 3;
+	
 	void checkThisPhone() {
 		TelephonyManager tm = 
 				(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
 		
 		String imei = tm.getDeviceId();
 		String simPhoneNum = tm.getLine1Number();
-		int problem = 0;
+		int problem = PHONE_OK;
+		this.appEnabled = true;
+		
 		if (imei.hashCode() != dataManager.getThisIMEIHash()) {
-			problem = -1;// wrong imei , exit
+			problem = WRONG_IMEI;// wrong imei , exit
 			this.appEnabled = false;
-		} else if (null == simPhoneNum) {
-			problem = 1;
+		} else if (null == simPhoneNum ) {
 			this.appEnabled = false;
-		} else if (!simPhoneNum.equals(dataManager.getThisPhoneNum())) {
-			// this phone number changed, require reactivate
-			this.appEnabled = false;
-			problem = 1;
-		}
+			problem = NO_SIM_CARD;
+		} else if ( !simPhoneNum.equals(dataManager.getThisPhoneNum())) {
+			this.appEnabled = false;// this phone number changed, require reactivate
+			problem = WRONG_NUMBER;
+		} 
 		
 		if (0 != problem) {
 			Intent intent = new Intent(Act_Main.this, Act_Check.class);

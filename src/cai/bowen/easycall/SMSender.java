@@ -47,7 +47,7 @@ public class SMSender {
 			public void onReceive(Context arg0, Intent arg1) {
 				switch (getResultCode()) {
 				case Activity.RESULT_OK:
-					Toast.makeText(context, SM_SENT,
+					Toast.makeText(context, SM_DELIVERED,
 							Toast.LENGTH_SHORT).show();
 					break;
 				case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
@@ -106,7 +106,7 @@ public class SMSender {
 			}
 			Toast.makeText(context, 
 					context.getString(R.string.txt_sms_sent), 
-					Toast.LENGTH_LONG).show();
+					Toast.LENGTH_SHORT).show();
 		} catch (IllegalArgumentException e) {
 			Toast.makeText(context,
 					context.getString(R.string.txt_unknown_error), 
@@ -118,13 +118,9 @@ public class SMSender {
 	public void stop() {
 		try {
 			context.unregisterReceiver(sendReceiver_);
-		} catch (Exception e) {
-			Log.e("sendReceiver_", e.toString());
-		}
-		try {
 			context.unregisterReceiver(deliveryReceiver_);
 		} catch (Exception e) {
-			Log.e("sendReceiver_", e.toString());
+			Log.e("unregisterReceiver ", e.toString());
 		}
 	}
 

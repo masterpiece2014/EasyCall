@@ -52,9 +52,10 @@ public class Act_Check extends Activity {
 		
 		problem = Integer.valueOf(getIntent().getStringExtra(ATT_PROBLEM));
 		newPhoneNum = getIntent().getStringExtra(ATT_THIS_PHONE_NUM);
+		this.setResult(RESULT_CANCELED);
 		
 		// wrong IMEI, just quit
-		if (-1 == problem) {
+		if (Act_Main.WRONG_IMEI == problem) {
 			new AlertDialog.Builder(this)
 		    .setMessage(getString(R.string.txt_wrong_phone))
 		    .setNegativeButton(getString(R.string.txt_exit), 
@@ -65,7 +66,7 @@ public class Act_Check extends Activity {
 		        }
 		     })
 		     .show();
-		} else { // incorrect phone number, reactivate required
+		} else if (Act_Main.WRONG_NUMBER == problem){ // incorrect phone number, reactivate required
 			enterBtn.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -96,10 +97,22 @@ public class Act_Check extends Activity {
 					}
 				}
 			});
+		} else { // problem == 3
+			new AlertDialog.Builder(Act_Check.this)
+		    .setMessage(getString(R.string.txt_no_service))
+		    .setNegativeButton(getString(R.string.txt_confirm), 
+		    						new DialogInterface.OnClickListener() {
+		        public void onClick(DialogInterface dialog, int which) {
+		        	Act_Check.this.setResult(RESULT_FIRST_USER);
+					Act_Check.this.finish();
+		        }
+		     })
+		     .show();
 		}
 	}
 	@Override
 	public void onBackPressed() {
+		// cannot go back
 	}
 
 	public static boolean isValidKey(final String key) {

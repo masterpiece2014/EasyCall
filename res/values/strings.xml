@@ -18,7 +18,7 @@
     <string name="txt_phone_hint">在此输入号码</string>
     <string name="txt_sendSms">发送短信</string>
     <string name="txt_btn_phone">拨打电话</string>
-    <string name="txt_sms_sent">发送成功</string>
+    <string name="txt_sms_sent">已发送</string>
     <string name="txt_sms_delivered">短信已送达</string>
     <string name="txt_unknown_error">未知错误</string>
     <string name="txt_no_service">现在没有服务</string>
